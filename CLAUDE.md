@@ -9,7 +9,8 @@ Package `io.shodo.standbyclock`, minSdk 29, Java 17 via `mise.toml`. Réponses e
 - **Pas de changement sans test.** Logique : test unitaire JVM dans `app/src/test`. Ce qui se voit : test Compose dans `app/src/androidTest`.
 - **Avant de pousser :** `scripts/check.sh` (ktlint, detekt, Android Lint, tests unitaires, APK). `mise exec -- ./gradlew ktlintFormat` corrige la mise en forme.
 - **Ne jamais affaiblir un garde-fou pour passer la CI** : pas de test désactivé, pas de `@Suppress`, `tools:ignore` ni règle désactivée sans commentaire qui explique pourquoi c'est voulu.
-- Messages de commit et titres de PR en anglais ; description de PR au format « Avant / Après / Comment » du modèle `.github/pull_request_template.md`.
+- Messages de commit et titres de PR en anglais, au format [Conventional Commits](https://www.conventionalcommits.org/fr/) (`feat:`, `fix:`, `docs:`, `ci:`…) : le bouton de release en déduit la prochaine version. Description de PR au format « Avant / Après / Comment » du modèle `.github/pull_request_template.md`.
+- La version n'est écrite nulle part dans le dépôt : elle vient du dernier tag `vX.Y.Z` (voir CONTRIBUTING.md).
 
 ## Code attendu
 

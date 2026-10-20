@@ -48,7 +48,7 @@ Pas de publicité, pas de réseau. Seul l'accès aux notifications est demandé,
 
 ## Démarrage rapide
 
-Le plus simple : récupérer l'APK déjà compilé dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml) (dernière exécution réussie, artefact **alwaysclock-debug**). Pour compiler soi-même, avec le SDK Android installé :
+Le plus simple : télécharger l'APK `alwaysclock-vX.Y.Z.apk` de la [dernière release](https://github.com/clement-vassant/AlwaysClock/releases/latest) et l'ouvrir sur le téléphone. La version en cours de développement est dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml) (dernière exécution réussie, artefact **alwaysclock-debug**). Pour compiler soi-même, avec le SDK Android installé :
 
 1. **Java 17 avec [mise](https://mise.jdx.dev)** :
    ```bash

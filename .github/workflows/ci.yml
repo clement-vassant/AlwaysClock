@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew ktlintCheck detekt lintDebug
       - name: Afficher tous les problèmes Android Lint
@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew testDebugUnitTest
       - name: Rapports en cas d'échec
@@ -59,7 +59,7 @@ jobs:
       API_LEVEL: 34
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v4
       # L'émulateur a besoin d'environ 7,4 Go libres pour sa partition userdata ; certains runners n'en ont
       # que 6,7 Go et l'émulateur s'arrête au démarrage (« Not enough space to create userdata partition »).
@@ -115,7 +115,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v4
       # La variante release est celle publiée par release.yml : elle doit compiler sur chaque PR.
       - run: ./gradlew assembleDebug assembleRelease

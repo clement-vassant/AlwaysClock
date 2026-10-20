@@ -94,7 +94,7 @@ jobs:
           CHANGELOG: ${{ steps.version.outputs.changelog }}
         # L'action liste aussi ci, docs, test… : on ne garde que les rubriques utiles à qui installe l'app.
         run: |
-          notes="$(awk '/^### /{keep = ($0 ~ /^### \[/ || $0 ~ /Nouveautés|Corrections|Performances|Dépendances|Retours en arrière|BREAKING/)} keep' <<<"$CHANGELOG")"
+          notes="$(awk 'BEGIN {keep = 1} /^#+ /{keep = ($0 ~ /^#+ \[/ || $0 ~ /Nouveautés|Corrections|Performances|Dépendances|Retours en arrière|BREAKING/)} keep' <<<"$CHANGELOG")"
           if ! grep -q '^\* ' <<<"$notes"; then
             notes+=$'\n\nAméliorations internes, sans changement visible.'
           fi

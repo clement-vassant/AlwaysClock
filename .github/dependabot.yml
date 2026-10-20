@@ -4,6 +4,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Titres Conventional Commits : les mises à jour de bibliothèques apparaissent dans les notes de version.
+    commit-message:
+      prefix: deps
     groups:
       # Les bibliothèques Compose/AndroidX et Kotlin évoluent ensemble : une seule PR par semaine.
       androidx:
@@ -14,3 +17,6 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    # Les actions GitHub ne changent pas l'app : pas de release pour elles.
+    commit-message:
+      prefix: ci

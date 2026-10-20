@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -86,9 +87,9 @@ private fun SettingsScreen(
     var style by remember { mutableStateOf(prefs.style) }
     var calendar by remember { mutableStateOf(prefs.showCalendar) }
     var theme by remember { mutableStateOf(prefs.themeMode) }
-    var nightStart by remember { mutableStateOf(prefs.nightStart) }
-    var nightEnd by remember { mutableStateOf(prefs.nightEnd) }
-    var autoOff by remember { mutableStateOf(prefs.autoOffMinutes) }
+    var nightStart by remember { mutableIntStateOf(prefs.nightStart) }
+    var nightEnd by remember { mutableIntStateOf(prefs.nightEnd) }
+    var autoOff by remember { mutableIntStateOf(prefs.autoOffMinutes) }
     var media by remember { mutableStateOf(prefs.showMedia) }
     // Revérifié au retour des réglages Android.
     var mediaAccess by remember { mutableStateOf(false) }

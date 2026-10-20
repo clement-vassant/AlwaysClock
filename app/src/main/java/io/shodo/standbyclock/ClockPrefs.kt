@@ -1,6 +1,7 @@
 package io.shodo.standbyclock
 
 import android.content.Context
+import androidx.core.content.edit
 import java.time.LocalTime
 
 /** Les styles d'horloge disponibles, dans l'ordre du balayage horizontal. */
@@ -15,35 +16,35 @@ class ClockPrefs(context: Context) {
 
     var style: ClockStyle
         get() = ClockStyle.entries.getOrElse(prefs.getInt("style", 0)) { ClockStyle.DIGITAL }
-        set(value) = prefs.edit().putInt("style", value.ordinal).apply()
+        set(value) = prefs.edit { putInt("style", value.ordinal) }
 
     var showCalendar: Boolean
         get() = prefs.getBoolean("calendar", true)
-        set(value) = prefs.edit().putBoolean("calendar", value).apply()
+        set(value) = prefs.edit { putBoolean("calendar", value) }
 
     var themeMode: ThemeMode
         get() = ThemeMode.entries.getOrElse(prefs.getInt("theme", 0)) { ThemeMode.AUTO }
-        set(value) = prefs.edit().putInt("theme", value.ordinal).apply()
+        set(value) = prefs.edit { putInt("theme", value.ordinal) }
 
     /** Début de la nuit, en minutes depuis minuit (22:00 par défaut). */
     var nightStart: Int
         get() = prefs.getInt("night_start", 22 * 60)
-        set(value) = prefs.edit().putInt("night_start", value).apply()
+        set(value) = prefs.edit { putInt("night_start", value) }
 
     /** Fin de la nuit, en minutes depuis minuit (07:00 par défaut). */
     var nightEnd: Int
         get() = prefs.getInt("night_end", 7 * 60)
-        set(value) = prefs.edit().putInt("night_end", value).apply()
+        set(value) = prefs.edit { putInt("night_end", value) }
 
     /** Carte « musique en cours » à la place du calendrier (si l'accès aux notifications est accordé). */
     var showMedia: Boolean
         get() = prefs.getBoolean("media", true)
-        set(value) = prefs.edit().putBoolean("media", value).apply()
+        set(value) = prefs.edit { putBoolean("media", value) }
 
     /** Délai avant extinction automatique, en minutes ; 0 = jamais (2 h par défaut). */
     var autoOffMinutes: Int
         get() = prefs.getInt("auto_off", 120)
-        set(value) = prefs.edit().putInt("auto_off", value).apply()
+        set(value) = prefs.edit { putInt("auto_off", value) }
 
     fun isNight(mode: ThemeMode, time: LocalTime): Boolean = isNightAt(mode, time, nightStart, nightEnd)
 }

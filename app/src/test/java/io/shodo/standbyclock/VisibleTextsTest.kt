@@ -1,9 +1,9 @@
 package io.shodo.standbyclock
 
+import java.io.File
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 
 /** L'app marche sur tout appareil Android : aucun texte visible ne doit la présenter comme réservée au Fold. */
 class VisibleTextsTest {

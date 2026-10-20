@@ -1,6 +1,6 @@
 # AlwaysClock
 
-[![Build APK](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml/badge.svg)](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml)
+[![CI](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml)
 
 **Le mode StandBy de l'iPhone sur Android : une grande horloge en paysage pendant que le téléphone charge.**
 
@@ -48,7 +48,7 @@ Pas de publicité, pas de réseau. Seul l'accès aux notifications est demandé,
 
 ## Démarrage rapide
 
-Le plus simple : récupérer l'APK déjà compilé dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml) (dernière exécution réussie, artefact **standby-clock-debug**). Pour compiler soi-même, avec le SDK Android installé :
+Le plus simple : récupérer l'APK déjà compilé dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml) (dernière exécution réussie, artefact **alwaysclock-debug**). Pour compiler soi-même, avec le SDK Android installé :
 
 1. **Java 17 avec [mise](https://mise.jdx.dev)** :
    ```bash
@@ -119,7 +119,7 @@ mise exec -- ./gradlew assembleDebug
 Dans un shell où mise est activé, `./gradlew assembleDebug` suffit.
 
 ### Sans rien installer (GitHub)
-À chaque push, le workflow `.github/workflows/build.yml` compile l'APK et le met en téléchargement dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml).
+À chaque push sur `main` et sur chaque pull request, le workflow `.github/workflows/ci.yml` compile l'APK et le met en téléchargement dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml).
 
 ## Installer sur le téléphone
 
@@ -146,7 +146,18 @@ Astuce : le bouton ⚙ de l'écran de veille ouvre les réglages de l'app.
   ```
   Avec plusieurs appareils connectés, choisir l'émulateur avec `ANDROID_SERIAL=emulator-5554` : les tests effacent les réglages de l'app.
 
-Les deux suites tournent dans GitHub Actions à chaque push.
+Les deux suites tournent dans GitHub Actions sur chaque pull request, avec ktlint, detekt et Android Lint.
+
+## Qualité
+
+`main` est protégée : on n'y pousse jamais directement, chaque changement passe par une pull request qui ne peut être mergée que si la CI est verte. Avant de pousser :
+
+```bash
+scripts/check.sh        # ktlint, detekt, Android Lint, tests unitaires, APK
+scripts/check.sh --all  # idem + tests d'interface
+```
+
+Le détail (jobs de la CI, conventions de code) est dans [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Structure
 
@@ -156,7 +167,9 @@ app/src/main/java/io/shodo/standbyclock/
   StandByDreamService.kt   écran de veille Android (charge)
   SettingsActivity.kt      réglages (style, calendrier, jour/nuit, plage de nuit)
   ClockPrefs.kt            préférences partagées + calcul jour/nuit
+  TimeUnits.kt             constantes de temps nommées (minutes par heure…)
   ui/StandByScreen.kt      pager des styles, anti-marquage, mode nuit, calendrier
+  ui/ClockColors.kt        palettes jour et nuit
   ui/Clocks.kt             les styles d'horloge et le calendrier du mois
   ui/MediaCard.kt          carte « musique en cours » et ses boutons
   NowPlaying.kt            suivi de la session média active (titre, pochette, contrôles, j'aime)

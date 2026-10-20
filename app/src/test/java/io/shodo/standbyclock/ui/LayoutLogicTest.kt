@@ -1,12 +1,12 @@
 package io.shodo.standbyclock.ui
 
+import java.time.LocalDate
+import kotlin.math.hypot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.LocalDate
-import kotlin.math.hypot
 
 class LayoutLogicTest {
 

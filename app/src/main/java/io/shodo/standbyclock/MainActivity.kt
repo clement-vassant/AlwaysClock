@@ -17,6 +17,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/** Luminosité de la fenêtre la nuit : le minimum, pour ne pas éblouir. */
+private const val NIGHT_BRIGHTNESS = 0.01f
+
+/** Plafond de luminosité le jour : un écran OLED s'use moins vite à faible luminosité. */
+private const val DAY_MAX_BRIGHTNESS = 0.35f
+
+/** Horloge plein écran en paysage, écran maintenu allumé ; s'éteint seule après le délai réglé. */
 class MainActivity : ComponentActivity() {
 
     /** Mode imposé par le lancement (raccourci ou entrée « Horloge jour/nuit »), sinon les réglages. */
@@ -44,8 +51,8 @@ class MainActivity : ComponentActivity() {
             StandByScreen(
                 prefs = prefs,
                 forcedTheme = forcedTheme.value,
-                onNightModeChanged = ::applyBrightness,
-                onOpenSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
+                onNightModeChange = ::applyBrightness,
+                onOpenSettings = { startActivity(Intent(this, SettingsActivity::class.java)) }
             )
         }
     }
@@ -74,7 +81,7 @@ class MainActivity : ComponentActivity() {
         val minutes = prefs.autoOffMinutes
         if (minutes <= 0) return
         autoOff = lifecycleScope.launch {
-            delay(launchedAt + minutes * 60_000L - SystemClock.elapsedRealtime())
+            delay(launchedAt + minutes * MILLIS_PER_MINUTE - SystemClock.elapsedRealtime())
             // Pas d'image fixe pendant des heures : on laisse l'écran s'éteindre et on ferme l'horloge.
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             finish()
@@ -93,7 +100,7 @@ class MainActivity : ComponentActivity() {
     /** Luminosité de la fenêtre : minimale la nuit, plafonnée à 35 % le jour (usure OLED). */
     private fun applyBrightness(night: Boolean) {
         window.attributes = window.attributes.apply {
-            screenBrightness = if (night) 0.01f else 0.35f
+            screenBrightness = if (night) NIGHT_BRIGHTNESS else DAY_MAX_BRIGHTNESS
         }
     }
 }

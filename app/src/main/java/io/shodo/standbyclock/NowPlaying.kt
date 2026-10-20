@@ -30,14 +30,17 @@ class NowPlaying(
     val previous: () -> Unit = {},
     val next: () -> Unit = {},
     val playPause: () -> Unit = {},
-    val toggleLike: () -> Unit = {},
+    val toggleLike: () -> Unit = {}
 ) {
     fun isRecent(nowMillis: Long): Boolean = isRecentMedia(isPlaying, pausedAt, nowMillis)
 }
 
-/** La carte musique s'affiche en lecture, ou en pause depuis moins de 10 minutes. */
+/** Durée pendant laquelle un morceau en pause reste affiché. */
+const val MEDIA_RECENT_MINUTES = 10
+
+/** La carte musique s'affiche en lecture, ou en pause depuis moins de [MEDIA_RECENT_MINUTES] minutes. */
 fun isRecentMedia(isPlaying: Boolean, pausedAt: Long, nowMillis: Long): Boolean =
-    isPlaying || nowMillis - pausedAt < 10 * 60_000L
+    isPlaying || nowMillis - pausedAt < MEDIA_RECENT_MINUTES * MILLIS_PER_MINUTE
 
 private val likeWords = listOf("like", "heart", "favorite", "favourite", "love", "library", "save", "collection", "favori", "j'aime")
 private val unlikeWords = listOf("remove", "unlike", "unfavorite", "unsave", "dislike", "supprimer", "retirer")
@@ -55,16 +58,26 @@ fun likeLabelState(label: String): Boolean? {
 
 private fun PlaybackState.CustomAction.label() = "$action $name"
 
+private fun MediaMetadata.artist(): String =
+    getString(MediaMetadata.METADATA_KEY_ARTIST) ?: getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST) ?: ""
+
+private fun MediaMetadata.albumArt(): Bitmap? = getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+    ?: getBitmap(MediaMetadata.METADATA_KEY_ART)
+    ?: getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
+
+private fun PlaybackState?.isPlaying() = this?.state == PlaybackState.STATE_PLAYING || this?.state == PlaybackState.STATE_BUFFERING
+
+/** L'instant de la pause est donné en temps écoulé depuis le démarrage : on le ramène à l'heure murale. */
+private fun PlaybackState?.pausedAtWallClock(): Long {
+    val sinceUpdate = this?.lastPositionUpdateTime?.takeIf { it > 0 }?.let { SystemClock.elapsedRealtime() - it } ?: 0L
+    return System.currentTimeMillis() - sinceUpdate
+}
+
 private fun MediaController.toNowPlaying(): NowPlaying? {
-    val meta = metadata ?: return null
+    val meta = metadata
+    val title = meta?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: return null
     val state = playbackState
-    val title = meta.getString(MediaMetadata.METADATA_KEY_TITLE) ?: return null
-    val artist = meta.getString(MediaMetadata.METADATA_KEY_ARTIST)
-        ?: meta.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST) ?: ""
-    val art = meta.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
-        ?: meta.getBitmap(MediaMetadata.METADATA_KEY_ART)
-        ?: meta.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
-    val playing = state?.state == PlaybackState.STATE_PLAYING || state?.state == PlaybackState.STATE_BUFFERING
+    val playing = state.isPlaying()
     val likeAction = state?.customActions?.firstOrNull { likeLabelState(it.label()) != null }
     val heartRating = ratingType == Rating.RATING_HEART
     val liked = when {
@@ -72,15 +85,13 @@ private fun MediaController.toNowPlaying(): NowPlaying? {
         heartRating -> meta.getRating(MediaMetadata.METADATA_KEY_USER_RATING)?.hasHeart() == true
         else -> null
     }
-    // L'instant de la pause est donné en temps écoulé depuis le démarrage : on le ramène à l'heure murale.
-    val sinceUpdate = state?.lastPositionUpdateTime?.takeIf { it > 0 }?.let { SystemClock.elapsedRealtime() - it } ?: 0L
     val controls = transportControls
     return NowPlaying(
         title = title,
-        artist = artist,
-        art = art,
+        artist = meta.artist(),
+        art = meta.albumArt(),
         isPlaying = playing,
-        pausedAt = System.currentTimeMillis() - sinceUpdate,
+        pausedAt = state.pausedAtWallClock(),
         liked = liked,
         previous = controls::skipToPrevious,
         next = controls::skipToNext,
@@ -90,7 +101,7 @@ private fun MediaController.toNowPlaying(): NowPlaying? {
                 likeAction != null -> controls.sendCustomAction(likeAction, null)
                 heartRating -> controls.setRating(Rating.newHeartRating(liked != true))
             }
-        },
+        }
     )
 }
 
@@ -129,14 +140,17 @@ private class NowPlayingTracker(context: Context, private val onChange: (NowPlay
     init {
         try {
             manager.addOnActiveSessionsChangedListener(sessionsListener, component, handler)
-        } catch (e: SecurityException) {
+        } catch (_: SecurityException) {
             // Accès retiré entre-temps : on n'affiche rien.
         }
         pick(manager.safeSessions())
     }
 
-    private fun MediaSessionManager.safeSessions(): List<MediaController> =
-        try { getActiveSessions(component) } catch (e: SecurityException) { emptyList() }
+    private fun MediaSessionManager.safeSessions(): List<MediaController> = try {
+        getActiveSessions(component)
+    } catch (_: SecurityException) {
+        emptyList()
+    }
 
     private fun pick(sessions: List<MediaController>) {
         val best = sessions.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING } ?: sessions.firstOrNull()

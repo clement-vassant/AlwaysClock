@@ -25,7 +25,11 @@ import kotlinx.coroutines.launch
  * Un DreamService n'est pas une Activity : on lui fournit nous-mêmes le
  * cycle de vie dont Compose a besoin.
  */
-class StandByDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner, ViewModelStoreOwner {
+class StandByDreamService :
+    DreamService(),
+    LifecycleOwner,
+    SavedStateRegistryOwner,
+    ViewModelStoreOwner {
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val savedStateController = SavedStateRegistryController.create(this)
@@ -53,7 +57,7 @@ class StandByDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOw
             setViewTreeLifecycleOwner(this@StandByDreamService)
             setViewTreeSavedStateRegistryOwner(this@StandByDreamService)
             setViewTreeViewModelStoreOwner(this@StandByDreamService)
-            setContent { StandByScreen(prefs = prefs, forcedTheme = null, onNightModeChanged = {}, onOpenSettings = null) }
+            setContent { StandByScreen(prefs = prefs, forcedTheme = null, onNightModeChange = {}, onOpenSettings = null) }
         }
         setContentView(view)
         window.preferLowestRefreshRate()
@@ -67,7 +71,7 @@ class StandByDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOw
         val minutes = ClockPrefs(this).autoOffMinutes
         if (minutes > 0) {
             autoOff = lifecycleScope.launch {
-                delay(minutes * 60_000L)
+                delay(minutes * MILLIS_PER_MINUTE)
                 finish()
             }
         }

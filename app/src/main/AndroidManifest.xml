@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -7,7 +8,9 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.StandByClock">
 
-        <!-- Mode "StandBy" manuel : plein écran, paysage, écran maintenu allumé. -->
+        <!-- Mode "StandBy" manuel : plein écran, paysage, écran maintenu allumé.
+             Paysage voulu : sur téléphone (écran étroit), Android 16 respecte encore l'orientation fixée ;
+             sur grand écran il l'ignore et la mise en page s'adapte déjà. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -15,7 +18,8 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density"
             android:launchMode="singleTask"
             android:showWhenLocked="true"
-            android:turnScreenOn="true">
+            android:turnScreenOn="true"
+            tools:ignore="DiscouragedApi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

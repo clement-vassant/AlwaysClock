@@ -26,8 +26,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import io.shodo.standbyclock.ui.DayColors
 
 /** Réglages : style, calendrier, jour/nuit, plage horaire de nuit et extinction automatique. Ouvert aussi par le ⚙ de l'écran de veille. */
 class SettingsActivity : ComponentActivity() {
@@ -42,7 +45,7 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val prefs = ClockPrefs(this)
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFFFF9F0A), background = Color.Black, surface = Color.Black)) {
+            MaterialTheme(colorScheme = darkColorScheme(primary = DayColors.accent, background = Color.Black, surface = Color.Black)) {
                 Surface(Modifier.fillMaxSize()) {
                     SettingsScreen(
                         prefs = prefs,
@@ -50,7 +53,7 @@ class SettingsActivity : ComponentActivity() {
                         onLaunch = { startActivity(Intent(this, MainActivity::class.java)) },
                         onOpenScreenSaver = ::openScreenSaverSettings,
                         hasMediaAccess = { MediaListenerService.isGranted(this) },
-                        onOpenNotificationAccess = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
+                        onOpenNotificationAccess = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
                     )
                 }
             }
@@ -58,13 +61,15 @@ class SettingsActivity : ComponentActivity() {
     }
 
     private fun pickTime(initial: Int, onPicked: (Int) -> Unit) {
-        TimePickerDialog(this, { _, h, m -> onPicked(h * 60 + m) }, initial / 60, initial % 60, true).show()
+        TimePickerDialog(this, { _, h, m ->
+            onPicked(h * MINUTES_PER_HOUR + m)
+        }, initial / MINUTES_PER_HOUR, initial % MINUTES_PER_HOUR, true).show()
     }
 
     private fun openScreenSaverSettings() {
         try {
             startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))
-        } catch (e: ActivityNotFoundException) {
+        } catch (_: ActivityNotFoundException) {
             startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS))
         }
     }
@@ -77,19 +82,20 @@ private fun SettingsScreen(
     onLaunch: () -> Unit,
     onOpenScreenSaver: () -> Unit,
     hasMediaAccess: () -> Boolean,
-    onOpenNotificationAccess: () -> Unit,
+    onOpenNotificationAccess: () -> Unit
 ) {
     var style by remember { mutableStateOf(prefs.style) }
     var calendar by remember { mutableStateOf(prefs.showCalendar) }
     var theme by remember { mutableStateOf(prefs.themeMode) }
-    var nightStart by remember { mutableStateOf(prefs.nightStart) }
-    var nightEnd by remember { mutableStateOf(prefs.nightEnd) }
-    var autoOff by remember { mutableStateOf(prefs.autoOffMinutes) }
+    var nightStart by remember { mutableIntStateOf(prefs.nightStart) }
+    var nightEnd by remember { mutableIntStateOf(prefs.nightEnd) }
+    var autoOff by remember { mutableIntStateOf(prefs.autoOffMinutes) }
     var media by remember { mutableStateOf(prefs.showMedia) }
     // Revérifié au retour des réglages Android.
     var mediaAccess by remember { mutableStateOf(false) }
+    val currentHasMediaAccess by rememberUpdatedState(hasMediaAccess)
     LifecycleResumeEffect(Unit) {
-        mediaAccess = hasMediaAccess()
+        mediaAccess = currentHasMediaAccess()
         onPauseOrDispose { }
     }
 
@@ -98,30 +104,39 @@ private fun SettingsScreen(
             .safeDrawingPadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text("StandBy Clock", style = MaterialTheme.typography.headlineMedium)
 
         Section("Style d'horloge") {
             Choices(
                 options = listOf(ClockStyle.DIGITAL to "Digital", ClockStyle.ANALOG to "Analogique", ClockStyle.MINIMAL to "Minimal"),
-                selected = style,
-            ) { style = it; prefs.style = it }
+                selected = style
+            ) {
+                style = it
+                prefs.style = it
+            }
         }
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Calendrier à droite de l'horloge", Modifier.weight(1f))
-            Switch(checked = calendar, onCheckedChange = { calendar = it; prefs.showCalendar = it })
+            Switch(checked = calendar, onCheckedChange = {
+                calendar = it
+                prefs.showCalendar = it
+            })
         }
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Afficher la musique en cours", Modifier.weight(1f))
-            Switch(checked = media, onCheckedChange = { media = it; prefs.showMedia = it })
+            Switch(checked = media, onCheckedChange = {
+                media = it
+                prefs.showMedia = it
+            })
         }
         if (media && !mediaAccess) {
             Text(
                 "Pour lire et piloter la musique (Spotify...), StandBy Clock a besoin de l'accès aux notifications.",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium
             )
             OutlinedButton(onClick = onOpenNotificationAccess) { Text("Autoriser l'accès aux notifications") }
         }
@@ -129,14 +144,27 @@ private fun SettingsScreen(
         Section("Jour ou nuit") {
             Choices(
                 options = listOf(ThemeMode.AUTO to "Auto", ThemeMode.DAY to "Jour", ThemeMode.NIGHT to "Nuit"),
-                selected = theme,
-            ) { theme = it; prefs.themeMode = it }
+                selected = theme
+            ) {
+                theme = it
+                prefs.themeMode = it
+            }
             if (theme == ThemeMode.AUTO) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Nuit de")
-                    OutlinedButton(onClick = { pickTime(nightStart) { nightStart = it; prefs.nightStart = it } }) { Text(formatMinutes(nightStart)) }
+                    OutlinedButton(onClick = {
+                        pickTime(nightStart) {
+                            nightStart = it
+                            prefs.nightStart = it
+                        }
+                    }) { Text(formatMinutes(nightStart)) }
                     Text("à")
-                    OutlinedButton(onClick = { pickTime(nightEnd) { nightEnd = it; prefs.nightEnd = it } }) { Text(formatMinutes(nightEnd)) }
+                    OutlinedButton(onClick = {
+                        pickTime(nightEnd) {
+                            nightEnd = it
+                            prefs.nightEnd = it
+                        }
+                    }) { Text(formatMinutes(nightEnd)) }
                 }
             }
         }
@@ -144,8 +172,11 @@ private fun SettingsScreen(
         Section("Éteindre après") {
             Choices(
                 options = listOf(60 to "1 h", 120 to "2 h", 240 to "4 h", 480 to "8 h", 0 to "Jamais"),
-                selected = autoOff,
-            ) { autoOff = it; prefs.autoOffMinutes = it }
+                selected = autoOff
+            ) {
+                autoOff = it
+                prefs.autoOffMinutes = it
+            }
         }
 
         Button(onClick = onLaunch, modifier = Modifier.fillMaxWidth()) { Text("Lancer l'horloge") }

@@ -1,6 +1,6 @@
 plugins {
+    // AGP 9 compile le Kotlin lui-même : le plugin org.jetbrains.kotlin.android ne s'applique plus ici.
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "io.shodo.standbyclock"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.shodo.standbyclock"

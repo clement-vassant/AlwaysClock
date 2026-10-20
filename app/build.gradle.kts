@@ -6,6 +6,21 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
 }
 
+// Version de l'app au format SemVer X.Y.Z, tenue à jour par release-please à chaque release (voir CONTRIBUTING.md).
+val appVersionName = rootProject.file("version.txt").readText().trim()
+
+// Android n'accepte une mise à jour que si versionCode augmente : X.Y.Z devient X*10000 + Y*100 + Z.
+val versionCodeStep = 100
+val appVersionCode =
+    appVersionName.split(".").map(String::toInt).let { (major, minor, patch) ->
+        require(minor < versionCodeStep && patch < versionCodeStep) { "versionCode ne peut pas encoder $appVersionName" }
+        (major * versionCodeStep + minor) * versionCodeStep + patch
+    }
+
+// Clé de signature des releases, fournie par la CI depuis les secrets GitHub (voir CONTRIBUTING.md).
+// Sans elle (build local), l'APK release est signé avec la clé debug pour rester installable.
+val releaseKeystorePath: String? = System.getenv("RELEASE_KEYSTORE_PATH")
+
 android {
     namespace = "io.shodo.standbyclock"
     compileSdk = 37
@@ -14,16 +29,26 @@ android {
         applicationId = "io.shodo.standbyclock"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = appVersionCode
+        versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (releaseKeystorePath != null) {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Signée avec la clé debug pour pouvoir l'installer directement sur le téléphone.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (releaseKeystorePath != null) "release" else "debug")
         }
     }
     compileOptions {
@@ -32,6 +57,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // Expose la version à l'app et aux tests (AppVersionTest).
+        buildConfig = true
     }
     lint {
         // Les avertissements importants font échouer la CI ; les avertissements de mise à jour de dépendances

@@ -35,3 +35,7 @@ Dependabot propose chaque semaine les mises à jour Gradle et chaque mois celles
 - La logique (calculs de dates, de tailles, de jour/nuit) vit dans des fonctions pures testées en JVM, pas dans l'UI.
 - Les commentaires expliquent le *pourquoi* (contrainte Android, choix anti-marquage), pas le *quoi*.
 - Le seuil d'un outil ne se contourne pas avec `@Suppress` sans un commentaire qui dit pourquoi.
+
+## Avec Claude Code
+
+`CLAUDE.md` reprend ces règles pour Claude, et `.claude/agents/` définit des agents spécialisés : `code-reviewer` (relecture du diff), `test-writer` (tests), `ci-doctor` (CI rouge) et `compose-ui` (vues Compose).

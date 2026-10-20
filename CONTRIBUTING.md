@@ -32,19 +32,18 @@ Dependabot propose chaque semaine les mises à jour Gradle et chaque mois celles
 
 Les PR sont mergées en squash et leur titre suit [Conventional Commits](https://www.conventionalcommits.org/fr/), vérifié par le workflow « Titre de PR ». Ce titre devient le message du commit sur `main`.
 
-**Publier une release** : onglet Actions > **Release** > **Run workflow** (sur `main`). Le workflow :
+**Publier une release** : onglet Actions > **Release** > **Run workflow** (sur `main`). Le workflow s'appuie sur [github-tag-action](https://github.com/mathieudutour/github-tag-action) :
 
-1. part du dernier tag `vX.Y.Z` (la toute première release est `0.1.0`) ;
-2. choisit la version suivante d'après les commits depuis ce tag, ou d'après le saut choisi dans le menu :
+1. il part du dernier tag `vX.Y.Z` et choisit la version suivante d'après les commits depuis ce tag (on peut aussi la saisir dans le champ « Version ») :
 
    | Commits depuis la dernière release | Version (SemVer) |
    |---|---|
-   | au moins un `feat!:` ou un pied `BREAKING CHANGE:` | majeure (avant 1.0 : mineure) |
+   | au moins un `feat!:` ou un pied `BREAKING CHANGE:` | majeure |
    | au moins un `feat:` | mineure (0.1.0 → 0.2.0) |
    | sinon (`fix:`, `perf:`, `deps:`, `docs:`…) | correctif (0.1.0 → 0.1.1) |
 
-3. compile l'APK release avec `versionName` = `X.Y.Z` et `versionCode` = `X*10000 + Y*100 + Z` ;
-4. crée le tag et la release GitHub, y attache `alwaysclock-vX.Y.Z.apk` et son empreinte SHA-256, avec des notes écrites par `scripts/release-notes.sh` à partir des titres de PR : rubriques « Changements importants », « Nouveautés » (`feat`), « Corrections » (`fix`, `perf`, `revert`) et « Dépendances » (`deps`), lien vers chaque PR. Les `ci`, `docs`, `test`, `refactor`, `build`, `style` et `chore` n'y figurent pas : ils ne changent rien pour qui installe l'app. Un titre de PR clair donne donc une note de version claire.
+2. il compile l'APK release avec `versionName` = `X.Y.Z` et `versionCode` = `X*10000 + Y*100 + Z` ;
+3. il crée le tag et la release GitHub, y attache `alwaysclock-vX.Y.Z.apk` et son empreinte SHA-256, avec des notes groupées en « Nouveautés » (`feat`), « Corrections » (`fix`), « Performances », « Dépendances » (`deps`) et « Retours en arrière » (`revert`), chaque ligne liée à son commit. Un titre de PR clair donne donc une note de version claire.
 
 La version n'est écrite dans aucun fichier : les builds locaux et de PR portent `0.0.1-dev`.
 

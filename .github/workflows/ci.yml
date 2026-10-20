@@ -25,10 +25,6 @@ jobs:
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew ktlintCheck detekt lintDebug
-      - name: Tests des scripts de release (version, notes)
-        run: |
-          scripts/next-version-test.sh
-          scripts/release-notes-test.sh
       - name: Afficher tous les problèmes Android Lint
         if: failure()
         run: cat app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt || true

@@ -1,16 +1,15 @@
 name: Release
 
 # Publication d'une release GitHub à la demande, depuis Actions > Release > Run workflow :
-# calcule la prochaine version SemVer depuis le dernier tag vX.Y.Z et les messages Conventional Commits,
-# compile l'APK release signé, puis crée le tag et la release GitHub (notes groupées par rubrique) avec l'APK.
+# la version SemVer et les notes sont déduites des messages Conventional Commits depuis le dernier tag vX.Y.Z
+# (github-tag-action), puis l'APK release signé est compilé et attaché à la release.
 on:
   workflow_dispatch:
     inputs:
-      bump:
-        description: "Saut de version (auto : déduit des commits depuis la dernière release)"
-        type: choice
-        options: [auto, patch, minor, major]
-        default: auto
+      version:
+        description: "Version à publier (X.Y.Z). Vide : déduite des commits depuis la dernière release."
+        type: string
+        default: ""
 
 # Deux clics rapprochés ne doivent pas publier deux fois la même version.
 concurrency:
@@ -35,28 +34,28 @@ jobs:
           echo "::error::Une release se lance depuis main, pas depuis $GITHUB_REF_NAME."
           exit 1
       - uses: actions/checkout@v4
+      # Calcul seul (dry_run) : le tag n'est créé qu'avec la release, une fois l'APK compilé.
+      # feat = mineure, fix/perf/deps/revert = correctif, « ! » ou BREAKING CHANGE = majeure, autre = correctif.
+      - name: Calculer la version et les notes
+        id: version
+        uses: mathieudutour/github-tag-action@v6.2
         with:
-          # Tout l'historique et les tags, pour trouver la dernière release.
-          fetch-depth: 0
-      - name: Calculer la version
+          github_token: ${{ github.token }}
+          dry_run: true
+          custom_tag: ${{ inputs.version }}
+          custom_release_rules: "feat:minor:Nouveautés,fix:patch:Corrections,perf:patch:Performances,deps:patch:Dépendances,revert:patch:Retours en arrière"
+      - name: Version retenue
         env:
-          BUMP: ${{ inputs.bump }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
         run: |
-          last_tag="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)"
-          if [ -z "$last_tag" ]; then
-            version=0.1.0
-          else
-            log="$(git log "$last_tag..HEAD" --format='%s%n%b')"
-            if [ -z "$log" ]; then
-              echo "::error::Aucun commit depuis $last_tag : rien à publier."
-              exit 1
-            fi
-            version="$(scripts/next-version.sh "${last_tag#v}" "$BUMP" <<<"$log")"
+          if [ -z "$NEW_VERSION" ]; then
+            echo "::error::Aucun commit depuis $PREVIOUS_TAG : rien à publier."
+            exit 1
           fi
-          echo "Dernière release : ${last_tag:-aucune}, nouvelle version : $version"
-          echo "LAST_TAG=$last_tag" >> "$GITHUB_ENV"
-          echo "VERSION=$version" >> "$GITHUB_ENV"
-          echo "TAG=v$version" >> "$GITHUB_ENV"
+          echo "Dernière release : $PREVIOUS_TAG, nouvelle version : $NEW_VERSION"
+          echo "VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
+          echo "TAG=v$NEW_VERSION" >> "$GITHUB_ENV"
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       # Toutes les releases doivent être signées avec la même clé, sinon Android refuse la mise à jour.
@@ -84,9 +83,13 @@ jobs:
           echo "versionName de l'APK : $apk_version"
           [ "$apk_version" = "$VERSION" ]
       - name: Écrire les notes de version
+        env:
+          CHANGELOG: ${{ steps.version.outputs.changelog }}
         run: |
-          range="${LAST_TAG:+$LAST_TAG..}HEAD"
-          git log "$range" --format=%s | scripts/release-notes.sh "$GITHUB_REPOSITORY" "$LAST_TAG" "$TAG" > "$RUNNER_TEMP/notes.md"
+          {
+            printf '%s\n\n' "$CHANGELOG"
+            printf '## Installer\n\nTélécharger `alwaysclock-%s.apk` ci-dessous et l’ouvrir sur le téléphone.\n' "$TAG"
+          } > "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Créer la release
         env:

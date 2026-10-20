@@ -88,11 +88,7 @@ class MainActivity : ComponentActivity() {
 
     /** Les entrées « Horloge jour » et « Horloge nuit » sont des alias de cette activité. */
     private fun themeFromLaunch(intent: Intent): ThemeMode? =
-        themeFromExtra(intent.getStringExtra(EXTRA_THEME)) ?: when (intent.component?.className) {
-            "$packageName.DayClock" -> ThemeMode.DAY
-            "$packageName.NightClock" -> ThemeMode.NIGHT
-            else -> null
-        }
+        themeFromExtra(intent.getStringExtra(EXTRA_THEME)) ?: themeFromAlias(intent.component?.className, packageName)
 
     /** Luminosité de la fenêtre : minimale la nuit, plafonnée à 35 % le jour (usure OLED). */
     private fun applyBrightness(night: Boolean) {

@@ -23,37 +23,37 @@ class NowPlaying(
     val artist: String,
     val art: Bitmap?,
     val isPlaying: Boolean,
-    /** En pause : instant de la pause (horloge [SystemClock.elapsedRealtime]). */
+    /** En pause : instant de la pause (heure murale, en ms). */
     val pausedAt: Long,
     /** null si le lecteur ne propose pas de « j'aime ». */
     val liked: Boolean?,
-    private val controller: MediaController,
-    private val likeAction: PlaybackState.CustomAction?,
+    val previous: () -> Unit = {},
+    val next: () -> Unit = {},
+    val playPause: () -> Unit = {},
+    val toggleLike: () -> Unit = {},
 ) {
-    /** En lecture, ou en pause depuis moins de 10 minutes. */
-    fun isRecent(): Boolean = isPlaying || SystemClock.elapsedRealtime() - pausedAt < 10 * 60_000L
-
-    fun previous() = controller.transportControls.skipToPrevious()
-    fun next() = controller.transportControls.skipToNext()
-    fun playPause() = if (isPlaying) controller.transportControls.pause() else controller.transportControls.play()
-
-    fun toggleLike() {
-        if (likeAction != null) {
-            controller.transportControls.sendCustomAction(likeAction, null)
-        } else if (controller.ratingType == Rating.RATING_HEART) {
-            controller.transportControls.setRating(Rating.newHeartRating(liked != true))
-        }
-    }
+    fun isRecent(nowMillis: Long): Boolean = isRecentMedia(isPlaying, pausedAt, nowMillis)
 }
+
+/** La carte musique s'affiche en lecture, ou en pause depuis moins de 10 minutes. */
+fun isRecentMedia(isPlaying: Boolean, pausedAt: Long, nowMillis: Long): Boolean =
+    isPlaying || nowMillis - pausedAt < 10 * 60_000L
 
 private val likeWords = listOf("like", "heart", "favorite", "favourite", "love", "library", "save", "collection", "favori", "j'aime")
 private val unlikeWords = listOf("remove", "unlike", "unfavorite", "unsave", "dislike", "supprimer", "retirer")
 
-/** Spotify et d'autres exposent le « j'aime » comme action personnalisée (« Ajouter à la collection » / « Supprimer de la collection » chez Spotify en français) ; son libellé dit s'il ajoute ou retire. */
-private fun PlaybackState.likeAction(): PlaybackState.CustomAction? = customActions.firstOrNull { a ->
-    val text = "${a.action} ${a.name}".lowercase()
-    likeWords.any { it in text }
+/**
+ * Spotify et d'autres exposent le « j'aime » comme action personnalisée (chez Spotify en français :
+ * « Ajouter à la collection » / « Supprimer de la collection »).
+ * null si le libellé n'est pas un « j'aime » ; sinon true s'il retire (morceau déjà aimé), false s'il ajoute.
+ */
+fun likeLabelState(label: String): Boolean? {
+    val text = label.lowercase()
+    if (likeWords.none { it in text }) return null
+    return unlikeWords.any { it in text }
 }
+
+private fun PlaybackState.CustomAction.label() = "$action $name"
 
 private fun MediaController.toNowPlaying(): NowPlaying? {
     val meta = metadata ?: return null
@@ -65,21 +65,32 @@ private fun MediaController.toNowPlaying(): NowPlaying? {
         ?: meta.getBitmap(MediaMetadata.METADATA_KEY_ART)
         ?: meta.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
     val playing = state?.state == PlaybackState.STATE_PLAYING || state?.state == PlaybackState.STATE_BUFFERING
-    val like = state?.likeAction()
+    val likeAction = state?.customActions?.firstOrNull { likeLabelState(it.label()) != null }
+    val heartRating = ratingType == Rating.RATING_HEART
     val liked = when {
-        like != null -> unlikeWords.any { it in "${like.action} ${like.name}".lowercase() }
-        ratingType == Rating.RATING_HEART -> meta.getRating(MediaMetadata.METADATA_KEY_USER_RATING)?.hasHeart() == true
+        likeAction != null -> likeLabelState(likeAction.label())
+        heartRating -> meta.getRating(MediaMetadata.METADATA_KEY_USER_RATING)?.hasHeart() == true
         else -> null
     }
+    // L'instant de la pause est donné en temps écoulé depuis le démarrage : on le ramène à l'heure murale.
+    val sinceUpdate = state?.lastPositionUpdateTime?.takeIf { it > 0 }?.let { SystemClock.elapsedRealtime() - it } ?: 0L
+    val controls = transportControls
     return NowPlaying(
         title = title,
         artist = artist,
         art = art,
         isPlaying = playing,
-        pausedAt = state?.lastPositionUpdateTime?.takeIf { it > 0 } ?: SystemClock.elapsedRealtime(),
+        pausedAt = System.currentTimeMillis() - sinceUpdate,
         liked = liked,
-        controller = this,
-        likeAction = like,
+        previous = controls::skipToPrevious,
+        next = controls::skipToNext,
+        playPause = { if (playing) controls.pause() else controls.play() },
+        toggleLike = {
+            when {
+                likeAction != null -> controls.sendCustomAction(likeAction, null)
+                heartRating -> controls.setRating(Rating.newHeartRating(liked != true))
+            }
+        },
     )
 }
 

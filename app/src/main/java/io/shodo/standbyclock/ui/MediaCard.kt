@@ -92,10 +92,10 @@ fun MediaBar(media: NowPlaying, colors: ClockColors, night: Boolean) {
 
 @Composable
 private fun MediaButtons(media: NowPlaying, colors: ClockColors, button: Dp) {
-    MediaButton(button, colors.secondary, media::previous) { c -> skip(c, forward = false) }
-    MediaButton(button, colors.accent, media::playPause, outlined = true) { c -> if (media.isPlaying) pause(c) else play(c) }
-    MediaButton(button, colors.secondary, media::next) { c -> skip(c, forward = true) }
-    media.liked?.let { liked -> MediaButton(button, colors.accent, media::toggleLike) { c -> heart(c, filled = liked) } }
+    MediaButton(button, colors.secondary, media.previous) { c -> skip(c, forward = false) }
+    MediaButton(button, colors.accent, media.playPause, outlined = true) { c -> if (media.isPlaying) pause(c) else play(c) }
+    MediaButton(button, colors.secondary, media.next) { c -> skip(c, forward = true) }
+    media.liked?.let { liked -> MediaButton(button, colors.accent, media.toggleLike) { c -> heart(c, filled = liked) } }
 }
 
 /** Bouton rond : le clic est consommé ici, il ne bascule donc pas jour/nuit. */

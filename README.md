@@ -1,35 +1,84 @@
-# StandBy Clock (Android)
+# AlwaysClock
 
-Horloges plein écran en paysage, façon mode StandBy de l'iPhone, pensées pour un écran OLED (Galaxy Z Fold).
+[![Build APK](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml/badge.svg)](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml)
 
-## Pourquoi pas le vrai Always On Display ?
+**Le mode StandBy de l'iPhone sur un Galaxy Z Fold : une grande horloge en paysage pendant que le téléphone charge.**
 
-Samsung ne laisse aucune app tierce dessiner sur l'AOD. L'app fonctionne donc de deux façons :
+| Écran extérieur du Fold, mode nuit | Écran extérieur du Fold, analogique |
+|---|---|
+| ![Horloge digitale en mode nuit sur l'écran extérieur du Fold](screenshots/fold-01.png) | ![Horloge analogique et calendrier sur l'écran extérieur du Fold](screenshots/fold-analog.png) |
+| **Grand écran, Digital** | **Grand écran, Minimal en mode nuit** |
+| ![Horloge digitale et calendrier sur le grand écran](screenshots/01-digital.png) | ![Horloge minimale en mode nuit sur le grand écran](screenshots/04-minimal-nuit.png) |
 
-- **Écran de veille Android** (automatique) : se lance tout seul quand le téléphone charge.
-- **App plein écran** (manuelle) : ouvrir l'app, le téléphone tourne en paysage et l'écran reste allumé.
+## Pourquoi
 
-Dans les deux cas : fond noir pur (pixels OLED éteints), pas de blanc pur, décalage de quelques pixels chaque minute contre le marquage, et un mode nuit rouge.
+Samsung ne laisse aucune app tierce dessiner sur l'Always On Display. AlwaysClock passe donc par deux autres moyens :
 
-## Utilisation
+- **l'écran de veille Android**, qui se lance tout seul quand le téléphone charge ;
+- **une app plein écran**, à ouvrir soi-même : le téléphone passe en paysage et l'écran reste allumé.
 
-- **Balayer à gauche/droite** : changer de style (Digital, Analogique, Minimal). Le choix est mémorisé.
-- **Toucher l'écran** : basculer le mode nuit (rouge sombre, luminosité minimale dans l'app).
-- **Appui long** : afficher ou masquer le calendrier du mois à droite de l'horloge (affiché par défaut).
-- **Double toucher** : ouvrir les réglages (dans l'app ; depuis l'écran de veille, bouton ⚙ des réglages Android).
+## Fonctionnalités
 
-## Jour, nuit et programmation
+- **Trois styles d'horloge** : Digital (grands chiffres), Analogique (cadran à aiguilles) et Minimal (chiffres fins). Le choix est mémorisé.
+- **Calendrier du mois** à côté de l'horloge, avec le jour courant entouré. Un appui long l'affiche ou le masque.
+- **Jour ou nuit rouge** : en *Auto*, la nuit suit une plage horaire (22:00 → 07:00 par défaut) ; on peut aussi forcer *Jour* ou *Nuit*. Le mode nuit passe en rouge sombre à luminosité minimale pour préserver la vision nocturne.
+- **Gestes** :
+  - balayer à gauche ou à droite pour changer de style ;
+  - toucher pour inverser jour et nuit jusqu'à la prochaine bascule programmée ;
+  - appui long pour afficher ou masquer le calendrier ;
+  - double toucher pour ouvrir les réglages.
+- **Lancement pendant la charge** grâce à l'écran de veille Android.
+- **Entrées « Horloge jour » et « Horloge nuit »** pour les déclencher depuis *Modes et routines* de Samsung, à heure fixe ou au début d'un mode.
+- **Réglages** : style, calendrier, jour/nuit et plage de nuit, délai d'extinction.
+- **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
-Dans les **réglages** (double toucher, ou appui long sur l'icône > *Réglages StandBy*) :
-- **Auto** : nuit rouge sur une plage horaire (22:00 → 07:00 par défaut), jour le reste du temps.
-- **Jour** ou **Nuit** : toujours ce mode.
+Pas de publicité, pas de réseau, aucune permission demandée.
 
-L'app ajoute deux entrées en plus de *StandBy Clock* : **Horloge jour** et **Horloge nuit**, qui forcent le mode pour ce lancement. Elles servent à **Modes et routines** de Samsung :
+<details>
+<summary>Plus de captures</summary>
+
+| Minimal | Sans calendrier | Réglages |
+|---|---|---|
+| ![Minimal](screenshots/03-minimal.png) | ![Sans calendrier](screenshots/05-minimal-sans-calendrier.png) | ![Réglages](screenshots/08-reglages.png) |
+
+</details>
+
+## Démarrage rapide
+
+Le plus simple : récupérer l'APK déjà compilé dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml) (dernière exécution réussie, artefact **standby-clock-debug**). Pour compiler soi-même, avec le SDK Android installé :
+
+1. **Java 17 avec [mise](https://mise.jdx.dev)** :
+   ```bash
+   mise install
+   ```
+2. **Compiler l'APK** :
+   ```bash
+   ./gradlew assembleDebug
+   ```
+   (ou `mise exec -- ./gradlew assembleDebug` si mise n'est pas activé dans le shell)
+3. **Installer sur le téléphone** (débogage USB ou sans fil activé dans les options pour les développeurs) :
+   ```bash
+   # par câble
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   # ou sans fil : Débogage sans fil > Associer l'appareil avec un code d'association
+   adb pair <ip>:<port_association> <code>
+   adb connect <ip>:<port_connexion>
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+## Feuille de route
+
+- Un 4e style d'horloge inspiré de celui d'Apple.
+- Les prochains événements de l'agenda à côté de l'horloge.
+
+## Programmer avec Modes et routines
+
+Les entrées **Horloge jour** et **Horloge nuit** forcent le mode pour ce lancement (*StandBy Clock* suit le mode Auto) :
 1. Paramètres > Modes et routines > Routines > **+**.
 2. *Si* : par exemple **Heure** (22:30, tous les jours) et/ou **En charge**, ou le début d'un mode (Sommeil...).
-3. *Alors* : **Applications > Ouvrir une app** > *Horloge nuit* (ou *Horloge jour*, ou *StandBy Clock* pour le mode Auto).
+3. *Alors* : **Applications > Ouvrir une app** > *Horloge nuit* (ou *Horloge jour*, ou *StandBy Clock*).
 
-Un toucher sur l'horloge inverse jour/nuit jusqu'à la prochaine bascule programmée. Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil (Paramètres de l'écran d'accueil > Masquer des applications) ; elles devraient rester proposées dans les routines (non vérifié).
+Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil (Paramètres de l'écran d'accueil > Masquer des applications) ; elles devraient rester proposées dans les routines (non vérifié).
 
 ## Protection de l'écran
 
@@ -59,7 +108,7 @@ mise exec -- ./gradlew assembleDebug
 Dans un shell où mise est activé, `./gradlew assembleDebug` suffit.
 
 ### Sans rien installer (GitHub)
-Pousser ce dossier dans un repo GitHub : le workflow `.github/workflows/build.yml` compile l'APK et le met en téléchargement dans l'onglet **Actions**.
+À chaque push, le workflow `.github/workflows/build.yml` compile l'APK et le met en téléchargement dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml).
 
 ## Installer sur le téléphone
 

@@ -20,6 +20,16 @@ class VisibleTextsTest {
     }
 
     @Test
+    fun `calendar setting does not promise a fixed side`() {
+        // Le calendrier échange sa place avec l'horloge chaque heure : un libellé « à droite » faisait croire
+        // à un réglage de côté, alors que l'interrupteur masque le calendrier.
+        for (side in listOf("à droite", "à gauche")) {
+            assertFalse("SettingsActivity promet un calendrier $side", Regex("[Cc]alendrier[^\"]*$side").containsMatchIn(settings))
+        }
+        assertTrue("Afficher le calendrier" in settings)
+    }
+
+    @Test
     fun `routines help is generic`() {
         val routines = Regex("<string name=\"help_routines\">(.*)</string>").find(strings)!!.groupValues[1]
         assertTrue(routines, "Tasker" in routines)

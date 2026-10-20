@@ -158,7 +158,7 @@ fun MinimalClock(now: ZonedDateTime, colors: ClockColors, modifier: Modifier = M
     }
 }
 
-/** Calendrier du mois affiché à droite de l'horloge ; semaine du lundi au dimanche, aujourd'hui entouré. */
+/** Calendrier du mois affiché à côté de l'horloge ; semaine du lundi au dimanche, aujourd'hui entouré. */
 @Composable
 fun MonthCalendar(now: ZonedDateTime, colors: ClockColors, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

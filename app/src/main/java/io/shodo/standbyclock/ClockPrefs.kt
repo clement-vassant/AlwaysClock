@@ -1,0 +1,64 @@
+package io.shodo.standbyclock
+
+import android.content.Context
+import java.time.LocalTime
+
+/** Les styles d'horloge disponibles, dans l'ordre du balayage horizontal. */
+enum class ClockStyle { DIGITAL, ANALOG, MINIMAL }
+
+/** Jour ou nuit : AUTO suit la plage horaire de nuit réglée dans l'app. */
+enum class ThemeMode { AUTO, DAY, NIGHT }
+
+/** Préférences partagées entre l'activité, l'écran de veille et les réglages. */
+class ClockPrefs(context: Context) {
+    private val prefs = context.getSharedPreferences("standby_clock", Context.MODE_PRIVATE)
+
+    var style: ClockStyle
+        get() = ClockStyle.entries.getOrElse(prefs.getInt("style", 0)) { ClockStyle.DIGITAL }
+        set(value) = prefs.edit().putInt("style", value.ordinal).apply()
+
+    var showCalendar: Boolean
+        get() = prefs.getBoolean("calendar", true)
+        set(value) = prefs.edit().putBoolean("calendar", value).apply()
+
+    var themeMode: ThemeMode
+        get() = ThemeMode.entries.getOrElse(prefs.getInt("theme", 0)) { ThemeMode.AUTO }
+        set(value) = prefs.edit().putInt("theme", value.ordinal).apply()
+
+    /** Début de la nuit, en minutes depuis minuit (22:00 par défaut). */
+    var nightStart: Int
+        get() = prefs.getInt("night_start", 22 * 60)
+        set(value) = prefs.edit().putInt("night_start", value).apply()
+
+    /** Fin de la nuit, en minutes depuis minuit (07:00 par défaut). */
+    var nightEnd: Int
+        get() = prefs.getInt("night_end", 7 * 60)
+        set(value) = prefs.edit().putInt("night_end", value).apply()
+
+    /** Délai avant extinction automatique, en minutes ; 0 = jamais (2 h par défaut). */
+    var autoOffMinutes: Int
+        get() = prefs.getInt("auto_off", 120)
+        set(value) = prefs.edit().putInt("auto_off", value).apply()
+
+    fun isNight(mode: ThemeMode, time: LocalTime): Boolean = when (mode) {
+        ThemeMode.DAY -> false
+        ThemeMode.NIGHT -> true
+        ThemeMode.AUTO -> {
+            val t = time.hour * 60 + time.minute
+            val start = nightStart
+            val end = nightEnd
+            if (start <= end) t in start until end else t >= start || t < end
+        }
+    }
+}
+
+/** Nom d'extra des raccourcis : "day" ou "night" force le mode pour ce lancement. */
+const val EXTRA_THEME = "theme"
+
+fun themeFromExtra(value: String?): ThemeMode? = when (value) {
+    "day" -> ThemeMode.DAY
+    "night" -> ThemeMode.NIGHT
+    else -> null
+}
+
+fun formatMinutes(minutes: Int) = "%02d:%02d".format(minutes / 60, minutes % 60)

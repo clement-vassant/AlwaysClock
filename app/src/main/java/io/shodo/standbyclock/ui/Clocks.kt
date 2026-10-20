@@ -1,0 +1,191 @@
+package io.shodo.standbyclock.ui
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.sp
+import java.time.DayOfWeek
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.min
+import kotlin.math.sin
+
+private val dateFormat = DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.FRENCH)
+
+private fun ZonedDateTime.hhmm() = "%02d:%02d".format(hour, minute)
+
+/** Convertit une taille en dp en sp, pour que les chiffres suivent la place disponible. */
+@Composable
+private fun Dp.asSp(): TextUnit = with(LocalDensity.current) { toSp() }
+
+/** Style 1 : grands chiffres façon StandBy, heures en clair, minutes en accent. */
+@Composable
+fun DigitalClock(now: ZonedDateTime, colors: ClockColors) {
+    BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        val digits = min(maxHeight * 0.55f, maxWidth * 0.27f).asSp()
+        val small = min(maxHeight * 0.08f, maxWidth * 0.045f).asSp()
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("%02d".format(now.hour), color = colors.primary, fontSize = digits, fontWeight = FontWeight.Bold)
+                Text(
+                    ":",
+                    color = if (now.second % 2 == 0) colors.secondary else colors.secondary.copy(alpha = 0.3f),
+                    fontSize = digits,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text("%02d".format(now.minute), color = colors.accent, fontSize = digits, fontWeight = FontWeight.Bold)
+            }
+            Text(now.format(dateFormat).replaceFirstChar { it.uppercase() }, color = colors.secondary, fontSize = small)
+        }
+    }
+}
+
+/** Style 2 : cadran analogique, avec la date en grand à droite si le calendrier est masqué. */
+@Composable
+fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boolean) {
+    Row(
+        Modifier.fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        AnalogDial(now, colors, Modifier.fillMaxHeight(0.9f).aspectRatio(1f))
+        if (showDate) {
+            Column {
+                Text(now.format(DateTimeFormatter.ofPattern("EEEE", Locale.FRENCH)).uppercase(), color = colors.accent, fontSize = 30.sp, fontWeight = FontWeight.SemiBold)
+                Text(now.dayOfMonth.toString(), color = colors.primary, fontSize = 140.sp, fontWeight = FontWeight.Bold)
+                Text(now.format(DateTimeFormatter.ofPattern("MMMM", Locale.FRENCH)), color = colors.secondary, fontSize = 30.sp)
+            }
+        }
+    }
+}
+
+@Composable
+fun AnalogDial(now: ZonedDateTime, colors: ClockColors, modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val r = min(size.width, size.height) / 2f
+        val c = center
+        // Graduations
+        for (i in 0 until 60) {
+            val major = i % 5 == 0
+            val inner = if (major) r * 0.86f else r * 0.93f
+            drawRadial(c, i / 60f, inner, r * 0.98f, if (major) colors.primary else colors.secondary, if (major) 6f else 2f)
+        }
+        val sec = now.second / 60f
+        val minute = (now.minute + sec) / 60f
+        val hour = ((now.hour % 12) + minute) / 12f
+        drawRadial(c, hour, 0f, r * 0.5f, colors.primary, 14f)
+        drawRadial(c, minute, 0f, r * 0.78f, colors.primary, 9f)
+        drawRadial(c, sec, -r * 0.12f, r * 0.85f, colors.accent, 3f)
+        drawCircle(colors.accent, radius = 10f, center = c)
+    }
+}
+
+/** Trait radial ; [fraction] = 0 à midi, sens horaire. */
+private fun DrawScope.drawRadial(
+    c: Offset, fraction: Float, from: Float, to: Float,
+    color: Color, width: Float,
+) {
+    val a = fraction * 2 * PI - PI / 2
+    val dx = cos(a).toFloat()
+    val dy = sin(a).toFloat()
+    drawLine(color, Offset(c.x + dx * from, c.y + dy * from), Offset(c.x + dx * to, c.y + dy * to), width, StrokeCap.Round)
+}
+
+/** Style 3 : très épuré, chiffres fins, peu de pixels allumés (idéal la nuit). */
+@Composable
+fun MinimalClock(now: ZonedDateTime, colors: ClockColors) {
+    BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        val digits = min(maxHeight * 0.7f, maxWidth * 0.3f).asSp()
+        val small = min(maxHeight * 0.06f, maxWidth * 0.03f).asSp()
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(now.hhmm(), color = colors.primary, fontSize = digits, fontWeight = FontWeight.Thin, fontFamily = FontFamily.SansSerif)
+            Text(now.format(dateFormat), color = colors.secondary, fontSize = small, fontWeight = FontWeight.Light, letterSpacing = 4.sp)
+        }
+    }
+}
+
+/** Calendrier du mois affiché à droite de l'horloge ; semaine du lundi au dimanche, aujourd'hui entouré. */
+@Composable
+fun MonthCalendar(now: ZonedDateTime, colors: ClockColors) {
+    BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // 8 lignes au plus (en-tête, jours de la semaine, 6 semaines)
+        val cell = min(maxWidth / 7, maxHeight / 8.5f)
+        val text = (cell * 0.42f).asSp()
+        val first = now.toLocalDate().withDayOfMonth(1)
+        val offset = first.dayOfWeek.value - DayOfWeek.MONDAY.value
+        val days = first.lengthOfMonth()
+        val today = now.dayOfMonth
+
+        Column(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+                Text(
+                    now.format(DateTimeFormatter.ofPattern("MMMM", Locale.FRENCH)).uppercase(),
+                    color = colors.accent, fontSize = (cell * 0.5f).asSp(), fontWeight = FontWeight.SemiBold,
+                )
+                Text(now.year.toString(), color = colors.secondary, fontSize = text)
+            }
+            Row(Modifier.fillMaxWidth()) {
+                for (label in listOf("L", "M", "M", "J", "V", "S", "D")) {
+                    Box(Modifier.weight(1f).height(cell * 0.8f), contentAlignment = Alignment.Center) {
+                        Text(label, color = colors.secondary, fontSize = (cell * 0.34f).asSp(), fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+            val weeks = (offset + days + 6) / 7
+            for (w in 0 until weeks) {
+                Row(Modifier.fillMaxWidth()) {
+                    for (col in 0 until 7) {
+                        val day = w * 7 + col - offset + 1
+                        Box(Modifier.weight(1f).height(cell), contentAlignment = Alignment.Center) {
+                            if (day in 1..days) {
+                                if (day == today) {
+                                    // Anneau plutôt que disque plein : moins de pixels allumés.
+                                    Box(Modifier.size(cell * 0.8f).border(2.dp, colors.accent, CircleShape))
+                                }
+                                Text(
+                                    day.toString(),
+                                    color = when {
+                                        day == today -> colors.accent
+                                        col >= 5 -> colors.secondary
+                                        else -> colors.primary
+                                    },
+                                    fontSize = text,
+                                    fontWeight = if (day == today) FontWeight.Bold else FontWeight.Normal,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

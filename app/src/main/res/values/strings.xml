@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">StandBy Clock</string>
+    <string name="dream_label">StandBy Clock</string>
+    <string name="day_clock">Horloge jour</string>
+    <string name="night_clock">Horloge nuit</string>
+    <string name="settings">Réglages StandBy</string>
+</resources>

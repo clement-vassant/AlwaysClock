@@ -59,13 +59,43 @@ fun MediaCard(media: NowPlaying, colors: ClockColors, night: Boolean) {
             Text(media.title, color = colors.primary, fontSize = text * 1.3f, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(media.artist, color = colors.secondary, fontSize = text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                MediaButton(button, colors.secondary, media::previous) { c -> skip(c, forward = false) }
-                MediaButton(button, colors.accent, media::playPause, outlined = true) { c -> if (media.isPlaying) pause(c) else play(c) }
-                MediaButton(button, colors.secondary, media::next) { c -> skip(c, forward = true) }
-                media.liked?.let { liked -> MediaButton(button, colors.accent, media::toggleLike) { c -> heart(c, filled = liked) } }
+                MediaButtons(media, colors, button)
             }
         }
     }
+}
+
+/** Version compacte, sous le calendrier : petite pochette, titre et artiste, puis les boutons, sur une ligne. */
+@Composable
+fun MediaBar(media: NowPlaying, colors: ClockColors, night: Boolean) {
+    BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        val button = min(maxHeight * 0.8f, maxWidth / 9f)
+        val text = (button * 0.32f).asSp()
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(button * 0.15f)) {
+            val bitmap = remember(media.art) { media.art?.asImageBitmap() }
+            if (bitmap != null) {
+                val filter = remember(night) { if (night) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null }
+                Image(
+                    bitmap, contentDescription = null,
+                    modifier = Modifier.size(button).clip(RoundedCornerShape(button * 0.12f)),
+                    contentScale = ContentScale.Crop, alpha = if (night) 0.35f else 0.6f, colorFilter = filter,
+                )
+            }
+            Column(Modifier.weight(1f)) {
+                Text(media.title, color = colors.primary, fontSize = text * 1.15f, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(media.artist, color = colors.secondary, fontSize = text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            MediaButtons(media, colors, button)
+        }
+    }
+}
+
+@Composable
+private fun MediaButtons(media: NowPlaying, colors: ClockColors, button: Dp) {
+    MediaButton(button, colors.secondary, media::previous) { c -> skip(c, forward = false) }
+    MediaButton(button, colors.accent, media::playPause, outlined = true) { c -> if (media.isPlaying) pause(c) else play(c) }
+    MediaButton(button, colors.secondary, media::next) { c -> skip(c, forward = true) }
+    media.liked?.let { liked -> MediaButton(button, colors.accent, media::toggleLike) { c -> heart(c, filled = liked) } }
 }
 
 /** Bouton rond : le clic est consommé ici, il ne bascule donc pas jour/nuit. */

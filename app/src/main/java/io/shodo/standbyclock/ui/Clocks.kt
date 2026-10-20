@@ -77,7 +77,16 @@ fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boole
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        AnalogDial(now, colors, Modifier.fillMaxHeight(0.9f).aspectRatio(1f))
+        if (showDate) {
+            AnalogDial(now, colors, Modifier.fillMaxHeight(0.8f).aspectRatio(1f))
+        } else {
+            // Calendrier à côté : le cadran ne dépasse pas sa hauteur (mêmes calculs que MonthCalendar,
+            // dont la colonne fait 1/1.4 de celle de l'horloge).
+            BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                val cell = min(maxWidth / 1.4f / 7, maxHeight / 8.5f)
+                AnalogDial(now, colors, Modifier.size(min(cell * 7, min(maxWidth, maxHeight) * 0.9f)))
+            }
+        }
         if (showDate) {
             Column {
                 Text(now.format(DateTimeFormatter.ofPattern("EEEE", Locale.FRENCH)).uppercase(), color = colors.accent, fontSize = 30.sp, fontWeight = FontWeight.SemiBold)

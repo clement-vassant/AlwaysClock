@@ -45,6 +45,8 @@ Les PR sont mergées en squash et leur titre suit [Conventional Commits](https:/
 2. il compile l'APK release avec `versionName` = `X.Y.Z` et `versionCode` = `X*10000 + Y*100 + Z` ;
 3. il crée le tag et la release GitHub, y attache `alwaysclock-vX.Y.Z.apk` et son empreinte SHA-256, avec des notes groupées en « Nouveautés » (`feat`), « Corrections » (`fix`), « Performances », « Dépendances » (`deps`) et « Retours en arrière » (`revert`), chaque ligne liée à son commit. Un titre de PR clair donne donc une note de version claire.
 
+La case « Essai à blanc » fait tout (version, notes, APK release signé) sans créer de tag ni de release : les notes s'affichent dans le résumé du run et l'APK est dans ses artefacts. Elle fonctionne depuis n'importe quelle branche, pour tester une modification du workflow avant de la merger.
+
 La version n'est écrite dans aucun fichier : les builds locaux et de PR portent `0.0.1-dev`.
 
 ### Clé de signature

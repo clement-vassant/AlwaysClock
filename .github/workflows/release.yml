@@ -10,6 +10,10 @@ on:
         description: "Version à publier (X.Y.Z). Vide : déduite des commits depuis la dernière release."
         type: string
         default: ""
+      dry_run:
+        description: "Essai à blanc : tout calculer et compiler, sans créer ni tag ni release (APK en artefact)"
+        type: boolean
+        default: false
 
 # Deux clics rapprochés ne doivent pas publier deux fois la même version.
 concurrency:
@@ -27,9 +31,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Seul main est protégé par ci-ok : on ne publie rien d'autre.
+      # Seul main est protégé par ci-ok : on ne publie rien d'autre (l'essai à blanc marche sur toute branche).
       - name: Vérifier la branche
-        if: github.ref != 'refs/heads/main'
+        if: github.ref != 'refs/heads/main' && !inputs.dry_run
         run: |
           echo "::error::Une release se lance depuis main, pas depuis $GITHUB_REF_NAME."
           exit 1
@@ -42,6 +46,9 @@ jobs:
         with:
           github_token: ${{ github.token }}
           dry_run: true
+          # Par défaut l'action ne calcule de version que sur main ; sur une autre branche (essai à blanc),
+          # elle produirait une préversion.
+          release_branches: ${{ github.ref_name }}
           custom_tag: ${{ inputs.version }}
           custom_release_rules: "feat:minor:Nouveautés,fix:patch:Corrections,perf:patch:Performances,deps:patch:Dépendances,revert:patch:Retours en arrière"
       - name: Version retenue
@@ -91,7 +98,14 @@ jobs:
             printf '## Installer\n\nTélécharger `alwaysclock-%s.apk` ci-dessous et l’ouvrir sur le téléphone.\n' "$TAG"
           } > "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: APK de l'essai à blanc
+        if: inputs.dry_run
+        uses: actions/upload-artifact@v7
+        with:
+          name: alwaysclock-release-essai
+          path: app/build/outputs/apk/release/app-release.apk
       - name: Créer la release
+        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew ktlintCheck detekt lintDebug
       - name: Afficher tous les problèmes Android Lint
         if: failure()
@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew testDebugUnitTest
       - name: Rapports en cas d'échec
         if: failure()
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # L'émulateur a besoin d'environ 7,4 Go libres pour sa partition userdata ; certains runners n'en ont
       # que 6,7 Go et l'émulateur s'arrête au démarrage (« Not enough space to create userdata partition »).
       # On supprime des outils préinstallés inutiles ici (.NET, Haskell, CodeQL) pour garder une marge.
@@ -116,7 +116,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # La variante release est celle publiée par release.yml : elle doit compiler sur chaque PR.
       - run: ./gradlew assembleDebug assembleRelease
       - uses: actions/upload-artifact@v7

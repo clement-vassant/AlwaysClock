@@ -63,7 +63,7 @@ jobs:
           echo "Dernière release : $PREVIOUS_TAG, nouvelle version : $NEW_VERSION"
           echo "VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
           echo "TAG=v$NEW_VERSION" >> "$GITHUB_ENV"
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
       - uses: gradle/actions/setup-gradle@v6
       # Toutes les releases doivent être signées avec la même clé, sinon Android refuse la mise à jour.
       # Sans secret, l'APK est signé avec une clé debug jetable : installable, mais pas comme mise à jour.

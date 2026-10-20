@@ -1,6 +1,7 @@
 package io.shodo.standbyclock
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.WindowManager
@@ -55,6 +56,17 @@ class MainActivity : ComponentActivity() {
         forcedTheme.value = themeFromLaunch(intent)
         launchedAt = SystemClock.elapsedRealtime()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        window.preferLowestRefreshRate()
+    }
+
+    // Fold plié ou déplié : on change d'écran, donc de modes d'affichage.
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        window.preferLowestRefreshRate()
     }
 
     override fun onResume() {

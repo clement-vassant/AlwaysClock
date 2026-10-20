@@ -56,6 +56,7 @@ class StandByDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOw
             setContent { StandByScreen(prefs = prefs, forcedTheme = null, onNightModeChanged = {}, onOpenSettings = null) }
         }
         setContentView(view)
+        window.preferLowestRefreshRate()
     }
 
     override fun onDreamingStarted() {

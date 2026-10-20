@@ -49,7 +49,7 @@ private fun Dp.asSp(): TextUnit = with(LocalDensity.current) { toSp() }
 
 /** Style 1 : grands chiffres façon StandBy, heures en clair, minutes en accent. */
 @Composable
-fun DigitalClock(now: ZonedDateTime, colors: ClockColors) {
+fun DigitalClock(now: ZonedDateTime, colors: ClockColors, showSeconds: Boolean) {
     BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         val digits = min(maxHeight * 0.55f, maxWidth * 0.27f).asSp()
         val small = min(maxHeight * 0.08f, maxWidth * 0.045f).asSp()
@@ -58,7 +58,7 @@ fun DigitalClock(now: ZonedDateTime, colors: ClockColors) {
                 Text("%02d".format(now.hour), color = colors.primary, fontSize = digits, fontWeight = FontWeight.Bold)
                 Text(
                     ":",
-                    color = if (now.second % 2 == 0) colors.secondary else colors.secondary.copy(alpha = 0.3f),
+                    color = if (!showSeconds || now.second % 2 == 0) colors.secondary else colors.secondary.copy(alpha = 0.3f),
                     fontSize = digits,
                     fontWeight = FontWeight.Bold,
                 )
@@ -71,20 +71,20 @@ fun DigitalClock(now: ZonedDateTime, colors: ClockColors) {
 
 /** Style 2 : cadran analogique, avec la date en grand à droite si le calendrier est masqué. */
 @Composable
-fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boolean) {
+fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boolean, showSeconds: Boolean) {
     Row(
         Modifier.fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         if (showDate) {
-            AnalogDial(now, colors, Modifier.fillMaxHeight(0.8f).aspectRatio(1f))
+            AnalogDial(now, colors, showSeconds, Modifier.fillMaxHeight(0.8f).aspectRatio(1f))
         } else {
             // Calendrier à côté : le cadran ne dépasse pas sa hauteur (mêmes calculs que MonthCalendar,
             // dont la colonne fait 1/1.4 de celle de l'horloge).
             BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 val cell = min(maxWidth / 1.4f / 7, maxHeight / 8.5f)
-                AnalogDial(now, colors, Modifier.size(min(cell * 7, min(maxWidth, maxHeight) * 0.9f)))
+                AnalogDial(now, colors, showSeconds, Modifier.size(min(cell * 7, min(maxWidth, maxHeight) * 0.9f)))
             }
         }
         if (showDate) {
@@ -98,7 +98,7 @@ fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boole
 }
 
 @Composable
-fun AnalogDial(now: ZonedDateTime, colors: ClockColors, modifier: Modifier = Modifier) {
+fun AnalogDial(now: ZonedDateTime, colors: ClockColors, showSeconds: Boolean, modifier: Modifier = Modifier) {
     Canvas(modifier) {
         val r = min(size.width, size.height) / 2f
         val c = center
@@ -113,7 +113,7 @@ fun AnalogDial(now: ZonedDateTime, colors: ClockColors, modifier: Modifier = Mod
         val hour = ((now.hour % 12) + minute) / 12f
         drawRadial(c, hour, 0f, r * 0.5f, colors.primary, 14f)
         drawRadial(c, minute, 0f, r * 0.78f, colors.primary, 9f)
-        drawRadial(c, sec, -r * 0.12f, r * 0.85f, colors.accent, 3f)
+        if (showSeconds) drawRadial(c, sec, -r * 0.12f, r * 0.85f, colors.accent, 3f)
         drawCircle(colors.accent, radius = 10f, center = c)
     }
 }

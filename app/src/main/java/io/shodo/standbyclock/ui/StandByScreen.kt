@@ -59,7 +59,9 @@ fun StandByScreen(
     onNightModeChanged: (Boolean) -> Unit,
     onOpenSettings: (() -> Unit)?,
 ) {
-    val now by rememberTicker()
+    // La nuit, rien n'affiche les secondes : on ne se réveille qu'une fois par minute (économie d'énergie).
+    var minuteTicks by remember { mutableStateOf(false) }
+    val now by rememberTicker(everyMinute = minuteTicks)
     // Les réglages peuvent changer pendant que l'horloge est en arrière-plan : on les relit à chaque reprise.
     var resumes by remember { mutableStateOf(0) }
     LifecycleResumeEffect(Unit) {
@@ -74,7 +76,10 @@ fun StandByScreen(
     var manualNight by remember(scheduledNight, themeMode) { mutableStateOf<Boolean?>(null) }
     val night = manualNight ?: scheduledNight
     val currentNight by rememberUpdatedState(night)
-    LaunchedEffect(night) { onNightModeChanged(night) }
+    LaunchedEffect(night) {
+        minuteTicks = night
+        onNightModeChanged(night)
+    }
     LaunchedEffect(showCalendar) { prefs.showCalendar = showCalendar }
 
     val styles = ClockStyle.entries
@@ -117,8 +122,8 @@ fun StandByScreen(
                 if (showCalendar && !clockFirst) CalendarPane(now, colors)
                 Box(Modifier.weight(1.4f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                     when (styles[page]) {
-                        ClockStyle.DIGITAL -> DigitalClock(now, colors)
-                        ClockStyle.ANALOG -> AnalogClockWithDate(now, colors, showDate = !showCalendar)
+                        ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
+                        ClockStyle.ANALOG -> AnalogClockWithDate(now, colors, showDate = !showCalendar, showSeconds = !night)
                         ClockStyle.MINIMAL -> MinimalClock(now, colors)
                     }
                 }
@@ -149,11 +154,12 @@ internal fun orbitOffset(epochMinute: Long): Offset {
     return Offset((radius * cos(angle)).toFloat(), (radius * sin(angle)).toFloat())
 }
 
-/** L'heure courante, rafraîchie au début de chaque seconde. */
+/** L'heure courante, rafraîchie au début de chaque seconde, ou de chaque minute si [everyMinute]. */
 @Composable
-fun rememberTicker() = produceState(initialValue = ZonedDateTime.now()) {
+fun rememberTicker(everyMinute: Boolean = false) = produceState(initialValue = ZonedDateTime.now(), everyMinute) {
+    val period = if (everyMinute) 60_000L else 1000L
     while (true) {
         value = ZonedDateTime.now()
-        delay(1000L - System.currentTimeMillis() % 1000L)
+        delay(period - System.currentTimeMillis() % period)
     }
 }

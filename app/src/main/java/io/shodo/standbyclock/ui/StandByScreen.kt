@@ -28,6 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.shodo.standbyclock.ClockPrefs
@@ -37,6 +40,7 @@ import io.shodo.standbyclock.rememberNowPlaying
 import io.shodo.standbyclock.ThemeMode
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import kotlinx.coroutines.delay
+import java.time.Clock
 import java.time.ZonedDateTime
 import kotlin.math.PI
 import kotlin.math.cos
@@ -63,10 +67,13 @@ fun StandByScreen(
     forcedTheme: ThemeMode?,
     onNightModeChanged: (Boolean) -> Unit,
     onOpenSettings: (() -> Unit)?,
+    // Injectables pour les tests : heure fixe, musique simulée.
+    clock: Clock = Clock.systemDefaultZone(),
+    nowPlayingSource: @Composable (enabled: Boolean) -> NowPlaying? = { rememberNowPlaying(it).value },
 ) {
     // La nuit, rien n'affiche les secondes : on ne se réveille qu'une fois par minute (économie d'énergie).
     var minuteTicks by remember { mutableStateOf(false) }
-    val now by rememberTicker(everyMinute = minuteTicks)
+    val now by rememberTicker(everyMinute = minuteTicks, clock = clock)
     // Les réglages peuvent changer pendant que l'horloge est en arrière-plan : on les relit à chaque reprise.
     var resumes by remember { mutableStateOf(0) }
     LifecycleResumeEffect(Unit) {
@@ -77,7 +84,7 @@ fun StandByScreen(
     var showCalendar by remember(resumes) { mutableStateOf(prefs.showCalendar) }
     val showMedia = remember(resumes) { prefs.showMedia }
     // Relancé à chaque reprise : l'accès aux notifications a pu être accordé entre-temps.
-    val nowPlaying by key(resumes) { rememberNowPlaying(showMedia) }
+    val nowPlaying = key(resumes) { nowPlayingSource(showMedia) }
 
     // Un toucher inverse jour/nuit jusqu'à la prochaine bascule programmée.
     val scheduledNight = prefs.isNight(themeMode, now.toLocalTime())
@@ -103,10 +110,10 @@ fun StandByScreen(
     // et l'horloge échange sa place avec le calendrier chaque heure.
     val epochMinute = now.toEpochSecond() / 60
     val shift = remember(epochMinute) { orbitOffset(epochMinute) }
-    val clockFirst = now.hour % 2 == 0
+    val clockFirst = clockOnLeft(now.hour)
 
-    // Musique en lecture (ou en pause depuis peu) : sa carte prend la place du calendrier.
-    val media = nowPlaying?.takeIf { it.isRecent() }
+    // Musique en lecture (ou en pause depuis peu) : barre sous le calendrier, ou tout le panneau s'il est masqué.
+    val media = nowPlaying?.takeIf { it.isRecent(clock.millis()) }
     val sidePane = media != null || showCalendar
 
     val colors = if (night) NightColors else DayColors
@@ -114,6 +121,8 @@ fun StandByScreen(
         Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .testTag(TAG_SCREEN)
+            .semantics { stateDescription = if (night) "nuit" else "jour" }
             // Toucher : jour/nuit. Appui long : calendrier. Double toucher : réglages (dans l'app seulement).
             .pointerInput(onOpenSettings) {
                 detectTapGestures(
@@ -132,7 +141,7 @@ fun StandByScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (sidePane && !clockFirst) SidePane(now, colors, media, night, showCalendar)
-                Box(Modifier.weight(1.4f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                Box(Modifier.weight(1.4f).fillMaxHeight().testTag(clockTag(styles[page])), contentAlignment = Alignment.Center) {
                     when (styles[page]) {
                         ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
                         ClockStyle.ANALOG -> AnalogClockWithDate(
@@ -158,14 +167,19 @@ private fun RowScope.SidePane(now: ZonedDateTime, colors: ClockColors, media: No
     Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
         when {
             media == null -> MonthCalendar(now, colors)
-            !showCalendar -> MediaCard(media, colors, night)
+            !showCalendar -> Box(Modifier.testTag(TAG_MEDIA_CARD)) { MediaCard(media, colors, night) }
             else -> Column(Modifier.fillMaxSize()) {
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { MonthCalendar(now, colors) }
-                Box(Modifier.weight(0.28f).fillMaxWidth(), contentAlignment = Alignment.Center) { MediaBar(media, colors, night) }
+                Box(Modifier.weight(0.28f).fillMaxWidth().testTag(TAG_MEDIA_BAR), contentAlignment = Alignment.Center) {
+                    MediaBar(media, colors, night)
+                }
             }
         }
     }
 }
+
+/** Heures paires : horloge à gauche ; heures impaires : à droite (anti-marquage). */
+fun clockOnLeft(hour: Int) = hour % 2 == 0
 
 /**
  * Position anti-marquage (en dp) à la minute [epochMinute] : 12 positions par tour, le rayon
@@ -181,12 +195,18 @@ internal fun orbitOffset(epochMinute: Long): Offset {
     return Offset((radius * cos(angle)).toFloat(), (radius * sin(angle)).toFloat())
 }
 
+/** Attente jusqu'au début de la prochaine seconde, ou de la prochaine minute si [everyMinute]. */
+fun tickDelayMillis(everyMinute: Boolean, nowMillis: Long): Long {
+    val period = if (everyMinute) 60_000L else 1000L
+    return period - nowMillis % period
+}
+
 /** L'heure courante, rafraîchie au début de chaque seconde, ou de chaque minute si [everyMinute]. */
 @Composable
-fun rememberTicker(everyMinute: Boolean = false) = produceState(initialValue = ZonedDateTime.now(), everyMinute) {
-    val period = if (everyMinute) 60_000L else 1000L
-    while (true) {
-        value = ZonedDateTime.now()
-        delay(period - System.currentTimeMillis() % period)
+fun rememberTicker(everyMinute: Boolean = false, clock: Clock = Clock.systemDefaultZone()) =
+    produceState(initialValue = ZonedDateTime.now(clock), everyMinute, clock) {
+        while (true) {
+            value = ZonedDateTime.now(clock)
+            delay(tickDelayMillis(everyMinute, clock.millis()))
+        }
     }
-}

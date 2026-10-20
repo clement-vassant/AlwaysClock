@@ -45,16 +45,24 @@ class ClockPrefs(context: Context) {
         get() = prefs.getInt("auto_off", 120)
         set(value) = prefs.edit().putInt("auto_off", value).apply()
 
-    fun isNight(mode: ThemeMode, time: LocalTime): Boolean = when (mode) {
-        ThemeMode.DAY -> false
-        ThemeMode.NIGHT -> true
-        ThemeMode.AUTO -> {
-            val t = time.hour * 60 + time.minute
-            val start = nightStart
-            val end = nightEnd
-            if (start <= end) t in start until end else t >= start || t < end
-        }
+    fun isNight(mode: ThemeMode, time: LocalTime): Boolean = isNightAt(mode, time, nightStart, nightEnd)
+}
+
+/** Nuit selon le mode ; en AUTO, la plage [start, end[ (minutes depuis minuit) peut passer minuit. */
+fun isNightAt(mode: ThemeMode, time: LocalTime, start: Int, end: Int): Boolean = when (mode) {
+    ThemeMode.DAY -> false
+    ThemeMode.NIGHT -> true
+    ThemeMode.AUTO -> {
+        val t = time.hour * 60 + time.minute
+        if (start <= end) t in start until end else t >= start || t < end
     }
+}
+
+/** Les entrées « Horloge jour » et « Horloge nuit » sont des alias de l'activité principale. */
+fun themeFromAlias(className: String?, packageName: String): ThemeMode? = when (className) {
+    "$packageName.DayClock" -> ThemeMode.DAY
+    "$packageName.NightClock" -> ThemeMode.NIGHT
+    else -> null
 }
 
 /** Nom d'extra des raccourcis : "day" ou "night" force le mode pour ce lancement. */

@@ -128,6 +128,20 @@ Paramètres > Affichage > **Écran de veille** (sur certaines versions de One UI
 
 Astuce : le bouton ⚙ de l'écran de veille ouvre les réglages de l'app.
 
+## Tests
+
+- **Tests unitaires** (JVM, rapides) : plage de nuit, raccourcis jour/nuit, grille du calendrier, côté de l'horloge, orbite anti-marquage, rythme de rafraîchissement, détection du « j'aime » et affichage de la carte musique.
+  ```bash
+  mise exec -- ./gradlew testDebugUnitTest
+  ```
+- **Tests d'interface** (Compose, sur un émulateur ou un téléphone branché, à heure fixe) : calendrier affiché par défaut, calendrier et musique visibles ensemble, cadran pas plus haut que le calendrier, toucher pour la nuit, appui long pour le calendrier, balayage entre les styles.
+  ```bash
+  mise exec -- ./gradlew connectedDebugAndroidTest
+  ```
+  Avec plusieurs appareils connectés, choisir l'émulateur avec `ANDROID_SERIAL=emulator-5554` : les tests effacent les réglages de l'app.
+
+Les deux suites tournent dans GitHub Actions à chaque push.
+
 ## Structure
 
 ```

@@ -3,6 +3,8 @@ package io.shodo.standbyclock.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -129,25 +131,39 @@ fun StandByScreen(
                     .offset { IntOffset((shift.x * density).roundToInt(), (shift.y * density).roundToInt()) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (sidePane && !clockFirst) SidePane(now, colors, media, night)
+                if (sidePane && !clockFirst) SidePane(now, colors, media, night, showCalendar)
                 Box(Modifier.weight(1.4f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                     when (styles[page]) {
                         ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
-                        ClockStyle.ANALOG -> AnalogClockWithDate(now, colors, showDate = !sidePane, showSeconds = !night)
+                        ClockStyle.ANALOG -> AnalogClockWithDate(
+                            now, colors, showDate = !sidePane, showSeconds = !night,
+                            // Barre musique sous le calendrier : il ne prend plus que 1/1.28 de la hauteur.
+                            calendarHeight = if (media != null && showCalendar) 1f / 1.28f else 1f,
+                        )
                         ClockStyle.MINIMAL -> MinimalClock(now, colors)
                     }
                 }
-                if (sidePane && clockFirst) SidePane(now, colors, media, night)
+                if (sidePane && clockFirst) SidePane(now, colors, media, night, showCalendar)
             }
         }
     }
 }
 
-/** Panneau à côté de l'horloge : la musique en cours s'il y en a, sinon le calendrier. */
+/**
+ * Panneau à côté de l'horloge : le calendrier, avec la musique en cours en barre compacte dessous.
+ * Calendrier masqué (appui long) : la musique a tout le panneau.
+ */
 @Composable
-private fun RowScope.SidePane(now: ZonedDateTime, colors: ClockColors, media: NowPlaying?, night: Boolean) {
+private fun RowScope.SidePane(now: ZonedDateTime, colors: ClockColors, media: NowPlaying?, night: Boolean, showCalendar: Boolean) {
     Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-        if (media != null) MediaCard(media, colors, night) else MonthCalendar(now, colors)
+        when {
+            media == null -> MonthCalendar(now, colors)
+            !showCalendar -> MediaCard(media, colors, night)
+            else -> Column(Modifier.fillMaxSize()) {
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { MonthCalendar(now, colors) }
+                Box(Modifier.weight(0.28f).fillMaxWidth(), contentAlignment = Alignment.Center) { MediaBar(media, colors, night) }
+            }
+        }
     }
 }
 

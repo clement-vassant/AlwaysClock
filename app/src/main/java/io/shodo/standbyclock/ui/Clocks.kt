@@ -71,7 +71,7 @@ fun DigitalClock(now: ZonedDateTime, colors: ClockColors, showSeconds: Boolean) 
 
 /** Style 2 : cadran analogique, avec la date en grand à droite si le calendrier est masqué. */
 @Composable
-fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boolean, showSeconds: Boolean) {
+fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boolean, showSeconds: Boolean, calendarHeight: Float = 1f) {
     Row(
         Modifier.fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically,
@@ -83,7 +83,7 @@ fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boole
             // Calendrier à côté : le cadran ne dépasse pas sa hauteur (mêmes calculs que MonthCalendar,
             // dont la colonne fait 1/1.4 de celle de l'horloge).
             BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                val cell = min(maxWidth / 1.4f / 7, maxHeight / 8.5f)
+                val cell = min(maxWidth / 1.4f / 7, maxHeight * calendarHeight / 8.5f)
                 AnalogDial(now, colors, showSeconds, Modifier.size(min(cell * 7, min(maxWidth, maxHeight) * 0.9f)))
             }
         }

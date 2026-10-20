@@ -134,6 +134,8 @@ Paramètres > Affichage > **Écran de veille** (le chemin varie selon les fabric
 
 Astuce : le bouton ⚙ de l'écran de veille ouvre les réglages de l'app.
 
+L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge (filaire ou par induction) : poser le téléphone écran allumé. Il s'affiche toujours en paysage : si l'écran est en portrait (rotation automatique coupée), l'horloge est tournée d'un quart de tour et se lit téléphone couché, haut de l'écran vers la gauche.
+
 ## Tests
 
 - **Tests unitaires** (JVM, rapides) : plage de nuit, raccourcis jour/nuit, grille du calendrier, côté de l'horloge, orbite anti-marquage, rythme de rafraîchissement, détection du « j'aime » et affichage de la carte musique.

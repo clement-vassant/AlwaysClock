@@ -1,6 +1,7 @@
 package io.shodo.standbyclock
 
 import android.service.dreams.DreamService
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -15,6 +16,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import io.shodo.standbyclock.ui.StandByScreen
+import io.shodo.standbyclock.ui.forceLandscape
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -57,7 +59,16 @@ class StandByDreamService :
             setViewTreeLifecycleOwner(this@StandByDreamService)
             setViewTreeSavedStateRegistryOwner(this@StandByDreamService)
             setViewTreeViewModelStoreOwner(this@StandByDreamService)
-            setContent { StandByScreen(prefs = prefs, forcedTheme = null, onNightModeChange = {}, onOpenSettings = null) }
+            setContent {
+                // Un écran de veille ne peut pas imposer le paysage : on tourne nous-mêmes l'horloge si besoin.
+                StandByScreen(
+                    prefs = prefs,
+                    forcedTheme = null,
+                    onNightModeChange = {},
+                    onOpenSettings = null,
+                    modifier = Modifier.forceLandscape()
+                )
+            }
         }
         setContentView(view)
         window.preferLowestRefreshRate()

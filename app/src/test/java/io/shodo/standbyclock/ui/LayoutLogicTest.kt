@@ -29,6 +29,14 @@ class LayoutLogicTest {
     }
 
     @Test
+    fun `screen saver turns only a portrait screen`() {
+        assertTrue(needsLandscapeRotation(width = 1080, height = 2520))
+        assertFalse(needsLandscapeRotation(width = 2520, height = 1080))
+        // Écran carré : rien à tourner.
+        assertFalse(needsLandscapeRotation(width = 1000, height = 1000))
+    }
+
+    @Test
     fun `clock side alternates every hour`() {
         assertTrue(clockOnLeft(0))
         assertFalse(clockOnLeft(1))

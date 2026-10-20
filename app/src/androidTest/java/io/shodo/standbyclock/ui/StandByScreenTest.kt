@@ -1,6 +1,9 @@
 package io.shodo.standbyclock.ui
 
 import android.content.Context
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -11,6 +14,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -67,6 +71,27 @@ class StandByScreenTest {
 
     private fun screenIs(state: String) =
         rule.onNodeWithTag(TAG_SCREEN).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, state))
+
+    // Écran de veille sur un écran en portrait : l'horloge est mise en page en paysage puis tournée.
+    @Test
+    fun portraitScreenSaverIsLaidOutInLandscape() {
+        rule.setContent {
+            Box(Modifier.size(width = 400.dp, height = 800.dp)) {
+                StandByScreen(
+                    prefs = prefs,
+                    forcedTheme = null,
+                    onNightModeChange = {},
+                    onOpenSettings = null,
+                    modifier = Modifier.forceLandscape(),
+                    clock = clock,
+                    nowPlayingSource = { null }
+                )
+            }
+        }
+        val size = rule.onNodeWithTag(TAG_SCREEN).fetchSemanticsNode().size
+        assertTrue("mise en page attendue en paysage : $size", size.width > size.height)
+        rule.onNodeWithTag(TAG_CALENDAR).assertIsDisplayed()
+    }
 
     @Test
     fun calendarIsShownByDefault() {

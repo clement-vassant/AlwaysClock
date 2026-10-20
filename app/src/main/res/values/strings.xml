@@ -1,4 +1,5 @@
-<resources>
+<!-- Textes en français : la vérification orthographique de Lint doit le savoir. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
     <string name="app_name">StandBy Clock</string>
     <string name="dream_label">StandBy Clock</string>
     <string name="day_clock">Horloge jour</string>

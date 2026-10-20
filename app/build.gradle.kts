@@ -39,9 +39,6 @@ android {
         warningsAsErrors = true
         abortOnError = true
         checkDependencies = true
-        // Tous les problèmes dans le journal de la CI, pas seulement le premier.
-        textReport = true
-        textOutput = file("stdout")
         disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion", "OldTargetApi")
     }
 }

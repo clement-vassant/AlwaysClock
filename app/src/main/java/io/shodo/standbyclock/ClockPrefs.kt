@@ -35,6 +35,11 @@ class ClockPrefs(context: Context) {
         get() = prefs.getInt("night_end", 7 * 60)
         set(value) = prefs.edit().putInt("night_end", value).apply()
 
+    /** Carte « musique en cours » à la place du calendrier (si l'accès aux notifications est accordé). */
+    var showMedia: Boolean
+        get() = prefs.getBoolean("media", true)
+        set(value) = prefs.edit().putBoolean("media", value).apply()
+
     /** Délai avant extinction automatique, en minutes ; 0 = jamais (2 h par défaut). */
     var autoOffMinutes: Int
         get() = prefs.getInt("auto_off", 120)

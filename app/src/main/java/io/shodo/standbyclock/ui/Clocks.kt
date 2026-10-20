@@ -45,7 +45,7 @@ private fun ZonedDateTime.hhmm() = "%02d:%02d".format(hour, minute)
 
 /** Convertit une taille en dp en sp, pour que les chiffres suivent la place disponible. */
 @Composable
-private fun Dp.asSp(): TextUnit = with(LocalDensity.current) { toSp() }
+internal fun Dp.asSp(): TextUnit = with(LocalDensity.current) { toSp() }
 
 /** Style 1 : grands chiffres façon StandBy, heures en clair, minutes en accent. */
 @Composable

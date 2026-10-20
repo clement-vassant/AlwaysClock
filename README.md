@@ -23,6 +23,7 @@ Samsung ne laisse aucune app tierce dessiner sur l'Always On Display. AlwaysCloc
 
 - **Trois styles d'horloge** : Digital (grands chiffres), Analogique (cadran à aiguilles) et Minimal (chiffres fins). Le choix est mémorisé.
 - **Calendrier du mois** à côté de l'horloge, avec le jour courant entouré. Un appui long l'affiche ou le masque.
+- **Musique en cours** (Spotify ou tout lecteur) : quand un morceau joue, ou est en pause depuis moins de 10 minutes, une carte remplace le calendrier. Elle montre la pochette atténuée (en gris la nuit), le titre, l'artiste et des boutons précédent, lecture/pause, suivant et « j'aime » (si le lecteur le propose, comme Spotify). Il faut accorder à l'app l'*accès aux notifications* une fois, depuis ses réglages.
 - **Jour ou nuit rouge** : en *Auto*, la nuit suit une plage horaire (22:00 → 07:00 par défaut) ; on peut aussi forcer *Jour* ou *Nuit*. Le mode nuit passe en rouge sombre à luminosité minimale pour préserver la vision nocturne.
 - **Gestes** :
   - balayer à gauche ou à droite pour changer de style ;
@@ -31,10 +32,10 @@ Samsung ne laisse aucune app tierce dessiner sur l'Always On Display. AlwaysCloc
   - double toucher pour ouvrir les réglages.
 - **Lancement pendant la charge** grâce à l'écran de veille Android.
 - **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis *Modes et routines* (Samsung) ou depuis tout autre outil d'automatisation capable d'ouvrir une app (Tasker, par exemple), à heure fixe ou au début d'un mode.
-- **Réglages** : style, calendrier, jour/nuit et plage de nuit, délai d'extinction.
+- **Réglages** : style, calendrier, musique en cours, jour/nuit et plage de nuit, délai d'extinction.
 - **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
-Pas de publicité, pas de réseau, aucune permission demandée.
+Pas de publicité, pas de réseau. Seul l'accès aux notifications est demandé, et uniquement pour la musique en cours (facultatif).
 
 <details>
 <summary>Plus de captures</summary>
@@ -72,6 +73,7 @@ Le plus simple : récupérer l'APK déjà compilé dans l'onglet [Actions](https
 
 - Un 4e style d'horloge inspiré de celui d'Apple.
 - Les prochains événements de l'agenda à côté de l'horloge.
+- Musique : barre de progression et choix du lecteur quand plusieurs jouent.
 
 ## Programmer avec Modes et routines
 
@@ -92,6 +94,7 @@ Samsung conseille d'éviter les images fixes affichées longtemps, de baisser la
 - **Moins de pixels allumés** : pas de blanc pur (gris clair `#BDBDBD` le jour), jour du calendrier entouré d'un anneau fin plutôt que d'un disque plein, mode nuit rouge sombre.
 - **Luminosité plafonnée** : 35 % le jour, minimale la nuit (dans l'app) ; l'écran de veille demande un écran atténué.
 - **Arrêt automatique** : réglage *Éteindre après* (1 h, 2 h, 4 h, 8 h, Jamais ; 2 h par défaut). Le délai écoulé, l'horloge se ferme et l'écran peut s'éteindre normalement.
+- **Économie d'énergie** : la nuit, ni trotteuse ni deux-points clignotants, et l'affichage n'est redessiné qu'une fois par minute (1 image par minute au lieu de 60 mesurée sur le Fold). L'app demande aussi le taux de rafraîchissement le plus bas de l'écran (60 Hz au lieu de 120 sur le Fold).
 
 ## Compiler l'APK
 
@@ -135,6 +138,10 @@ app/src/main/java/io/shodo/standbyclock/
   ClockPrefs.kt            préférences partagées + calcul jour/nuit
   ui/StandByScreen.kt      pager des styles, anti-marquage, mode nuit, calendrier
   ui/Clocks.kt             les styles d'horloge et le calendrier du mois
+  ui/MediaCard.kt          carte « musique en cours » et ses boutons
+  NowPlaying.kt            suivi de la session média active (titre, pochette, contrôles, j'aime)
+  MediaListenerService.kt  écouteur de notifications qui donne accès aux sessions média
+  RefreshRate.kt           demande le taux de rafraîchissement le plus bas de l'écran
 ```
 
 Pour ajouter un style : une valeur dans `ClockStyle`, un `@Composable` dans `Clocks.kt`, une ligne dans le `when` de `StandByScreen.kt`.

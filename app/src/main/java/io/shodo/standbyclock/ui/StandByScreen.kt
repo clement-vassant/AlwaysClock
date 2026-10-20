@@ -14,6 +14,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -29,6 +30,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.shodo.standbyclock.ClockPrefs
 import io.shodo.standbyclock.ClockStyle
+import io.shodo.standbyclock.NowPlaying
+import io.shodo.standbyclock.rememberNowPlaying
 import io.shodo.standbyclock.ThemeMode
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import kotlinx.coroutines.delay
@@ -70,6 +73,9 @@ fun StandByScreen(
     }
     val themeMode = remember(forcedTheme, resumes) { forcedTheme ?: prefs.themeMode }
     var showCalendar by remember(resumes) { mutableStateOf(prefs.showCalendar) }
+    val showMedia = remember(resumes) { prefs.showMedia }
+    // Relancé à chaque reprise : l'accès aux notifications a pu être accordé entre-temps.
+    val nowPlaying by key(resumes) { rememberNowPlaying(showMedia) }
 
     // Un toucher inverse jour/nuit jusqu'à la prochaine bascule programmée.
     val scheduledNight = prefs.isNight(themeMode, now.toLocalTime())
@@ -97,6 +103,10 @@ fun StandByScreen(
     val shift = remember(epochMinute) { orbitOffset(epochMinute) }
     val clockFirst = now.hour % 2 == 0
 
+    // Musique en lecture (ou en pause depuis peu) : sa carte prend la place du calendrier.
+    val media = nowPlaying?.takeIf { it.isRecent() }
+    val sidePane = media != null || showCalendar
+
     val colors = if (night) NightColors else DayColors
     Box(
         Modifier
@@ -119,24 +129,25 @@ fun StandByScreen(
                     .offset { IntOffset((shift.x * density).roundToInt(), (shift.y * density).roundToInt()) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (showCalendar && !clockFirst) CalendarPane(now, colors)
+                if (sidePane && !clockFirst) SidePane(now, colors, media, night)
                 Box(Modifier.weight(1.4f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                     when (styles[page]) {
                         ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
-                        ClockStyle.ANALOG -> AnalogClockWithDate(now, colors, showDate = !showCalendar, showSeconds = !night)
+                        ClockStyle.ANALOG -> AnalogClockWithDate(now, colors, showDate = !sidePane, showSeconds = !night)
                         ClockStyle.MINIMAL -> MinimalClock(now, colors)
                     }
                 }
-                if (showCalendar && clockFirst) CalendarPane(now, colors)
+                if (sidePane && clockFirst) SidePane(now, colors, media, night)
             }
         }
     }
 }
 
+/** Panneau à côté de l'horloge : la musique en cours s'il y en a, sinon le calendrier. */
 @Composable
-private fun RowScope.CalendarPane(now: ZonedDateTime, colors: ClockColors) {
+private fun RowScope.SidePane(now: ZonedDateTime, colors: ClockColors, media: NowPlaying?, night: Boolean) {
     Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-        MonthCalendar(now, colors)
+        if (media != null) MediaCard(media, colors, night) else MonthCalendar(now, colors)
     }
 }
 

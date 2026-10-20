@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 
 /** Réglages : style, calendrier, jour/nuit, plage horaire de nuit et extinction automatique. Ouvert aussi par le ⚙ de l'écran de veille. */
 class SettingsActivity : ComponentActivity() {
@@ -47,6 +48,8 @@ class SettingsActivity : ComponentActivity() {
                         pickTime = ::pickTime,
                         onLaunch = { startActivity(Intent(this, MainActivity::class.java)) },
                         onOpenScreenSaver = ::openScreenSaverSettings,
+                        hasMediaAccess = { MediaListenerService.isGranted(this) },
+                        onOpenNotificationAccess = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
                     )
                 }
             }
@@ -72,6 +75,8 @@ private fun SettingsScreen(
     pickTime: (Int, (Int) -> Unit) -> Unit,
     onLaunch: () -> Unit,
     onOpenScreenSaver: () -> Unit,
+    hasMediaAccess: () -> Boolean,
+    onOpenNotificationAccess: () -> Unit,
 ) {
     var style by remember { mutableStateOf(prefs.style) }
     var calendar by remember { mutableStateOf(prefs.showCalendar) }
@@ -79,6 +84,13 @@ private fun SettingsScreen(
     var nightStart by remember { mutableStateOf(prefs.nightStart) }
     var nightEnd by remember { mutableStateOf(prefs.nightEnd) }
     var autoOff by remember { mutableStateOf(prefs.autoOffMinutes) }
+    var media by remember { mutableStateOf(prefs.showMedia) }
+    // Revérifié au retour des réglages Android.
+    var mediaAccess by remember { mutableStateOf(false) }
+    LifecycleResumeEffect(Unit) {
+        mediaAccess = hasMediaAccess()
+        onPauseOrDispose { }
+    }
 
     Column(
         Modifier
@@ -99,6 +111,18 @@ private fun SettingsScreen(
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Calendrier à droite de l'horloge", Modifier.weight(1f))
             Switch(checked = calendar, onCheckedChange = { calendar = it; prefs.showCalendar = it })
+        }
+
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Afficher la musique en cours", Modifier.weight(1f))
+            Switch(checked = media, onCheckedChange = { media = it; prefs.showMedia = it })
+        }
+        if (media && !mediaAccess) {
+            Text(
+                "Pour lire et piloter la musique (Spotify...), StandBy Clock a besoin de l'accès aux notifications.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OutlinedButton(onClick = onOpenNotificationAccess) { Text("Autoriser l'accès aux notifications") }
         }
 
         Section("Jour ou nuit") {

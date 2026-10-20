@@ -2,7 +2,9 @@
 
 [![Build APK](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml/badge.svg)](https://github.com/clement-vassant/AlwaysClock/actions/workflows/build.yml)
 
-**Le mode StandBy de l'iPhone sur un Galaxy Z Fold : une grande horloge en paysage pendant que le téléphone charge.**
+**Le mode StandBy de l'iPhone sur Android : une grande horloge en paysage pendant que le téléphone charge.**
+
+Fonctionne sur tout téléphone Android 10 ou plus récent. Testée sur un Galaxy Z Fold, sur ses deux écrans : l'écran extérieur, téléphone plié, et le grand écran déplié.
 
 | Écran extérieur du Fold, mode nuit | Écran extérieur du Fold, analogique |
 |---|---|
@@ -28,7 +30,7 @@ Samsung ne laisse aucune app tierce dessiner sur l'Always On Display. AlwaysCloc
   - appui long pour afficher ou masquer le calendrier ;
   - double toucher pour ouvrir les réglages.
 - **Lancement pendant la charge** grâce à l'écran de veille Android.
-- **Entrées « Horloge jour » et « Horloge nuit »** pour les déclencher depuis *Modes et routines* de Samsung, à heure fixe ou au début d'un mode.
+- **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis *Modes et routines* (Samsung) ou depuis tout autre outil d'automatisation capable d'ouvrir une app (Tasker, par exemple), à heure fixe ou au début d'un mode.
 - **Réglages** : style, calendrier, jour/nuit et plage de nuit, délai d'extinction.
 - **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
@@ -78,7 +80,7 @@ Les entrées **Horloge jour** et **Horloge nuit** forcent le mode pour ce lancem
 2. *Si* : par exemple **Heure** (22:30, tous les jours) et/ou **En charge**, ou le début d'un mode (Sommeil...).
 3. *Alors* : **Applications > Ouvrir une app** > *Horloge nuit* (ou *Horloge jour*, ou *StandBy Clock*).
 
-Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil (Paramètres de l'écran d'accueil > Masquer des applications) ; elles devraient rester proposées dans les routines (non vérifié).
+Sur d'autres téléphones, ces mêmes entrées se lancent depuis Tasker ou tout outil capable d'ouvrir une app. Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil (Paramètres de l'écran d'accueil > Masquer des applications) ; elles devraient rester proposées dans les routines (non vérifié).
 
 ## Protection de l'écran
 

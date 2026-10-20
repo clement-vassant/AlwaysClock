@@ -1,14 +1,21 @@
 name: Release
 
-# Releases GitHub selon SemVer, pilotées par release-please à partir des messages Conventional Commits :
-# 1. chaque push sur main met à jour une PR « chore: release X.Y.Z » (CHANGELOG.md, version.txt) ;
-# 2. merger cette PR crée le tag vX.Y.Z et la release GitHub avec ses notes ;
-# 3. le job « apk » compile l'APK release, le signe et l'attache à la release.
+# Publication d'une release GitHub à la demande, depuis Actions > Release > Run workflow :
+# la version SemVer et les notes sont déduites des messages Conventional Commits depuis le dernier tag vX.Y.Z
+# (github-tag-action), puis l'APK release signé est compilé et attaché à la release.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version à publier (X.Y.Z). Vide : déduite des commits depuis la dernière release."
+        type: string
+        default: ""
+      dry_run:
+        description: "Essai à blanc : tout calculer et compiler, sans créer ni tag ni release (APK en artefact)"
+        type: boolean
+        default: false
 
-# Deux pushes rapprochés ne doivent pas créer deux fois la même release.
+# Deux clics rapprochés ne doivent pas publier deux fois la même version.
 concurrency:
   group: release
   cancel-in-progress: false
@@ -17,47 +24,45 @@ permissions:
   contents: read
 
 jobs:
-  release-please:
-    name: Préparer la release
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-      pull-requests: write
-      # Pour relancer la CI sur la PR de release (voir plus bas).
-      actions: write
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-    steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-      # Une PR ouverte avec le jeton du workflow ne déclenche pas la CI (règle GitHub contre les boucles),
-      # alors que main exige ci-ok : on la lance explicitement, ce qui reste permis avec ce jeton.
-      - name: Lancer la CI sur la PR de release
-        if: steps.release.outputs.pr
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BRANCH: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
-        run: gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
-
-  apk:
-    name: APK de la release
-    needs: release-please
-    if: needs.release-please.outputs.release_created == 'true'
+  release:
+    name: Publier la release
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: write
-    env:
-      TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
+      # Seul main est protégé par ci-ok : on ne publie rien d'autre (l'essai à blanc marche sur toute branche).
+      - name: Vérifier la branche
+        if: github.ref != 'refs/heads/main' && !inputs.dry_run
+        run: |
+          echo "::error::Une release se lance depuis main, pas depuis $GITHUB_REF_NAME."
+          exit 1
       - uses: actions/checkout@v4
+      # Calcul seul (dry_run) : le tag n'est créé qu'avec la release, une fois l'APK compilé.
+      # feat = mineure, fix/perf/deps/revert = correctif, « ! » ou BREAKING CHANGE = majeure, autre = correctif.
+      - name: Calculer la version et les notes
+        id: version
+        uses: mathieudutour/github-tag-action@v6.2
         with:
-          ref: ${{ env.TAG }}
+          github_token: ${{ github.token }}
+          dry_run: true
+          # Par défaut l'action ne calcule de version que sur main ; sur une autre branche (essai à blanc),
+          # elle produirait une préversion.
+          release_branches: ${{ github.ref_name }}
+          custom_tag: ${{ inputs.version }}
+          custom_release_rules: "feat:minor:Nouveautés,fix:patch:Corrections,perf:patch:Performances,deps:patch:Dépendances,revert:patch:Retours en arrière"
+      - name: Version retenue
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+        run: |
+          if [ -z "$NEW_VERSION" ]; then
+            echo "::error::Aucun commit depuis $PREVIOUS_TAG : rien à publier."
+            exit 1
+          fi
+          echo "Dernière release : $PREVIOUS_TAG, nouvelle version : $NEW_VERSION"
+          echo "VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
+          echo "TAG=v$NEW_VERSION" >> "$GITHUB_ENV"
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       # Toutes les releases doivent être signées avec la même clé, sinon Android refuse la mise à jour.
@@ -77,18 +82,40 @@ jobs:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease -PappVersion="$VERSION"
       - name: Vérifier la version de l'APK
         run: |
           aapt="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)/aapt"
-          version="$("$aapt" dump badging app/build/outputs/apk/release/app-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")"
-          echo "versionName de l'APK : $version, tag : $TAG"
-          [ "v$version" = "$TAG" ]
-      - name: Attacher l'APK à la release
+          apk_version="$("$aapt" dump badging app/build/outputs/apk/release/app-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")"
+          echo "versionName de l'APK : $apk_version"
+          [ "$apk_version" = "$VERSION" ]
+      - name: Écrire les notes de version
+        env:
+          CHANGELOG: ${{ steps.version.outputs.changelog }}
+        # L'action liste aussi ci, docs, test… : on ne garde que les rubriques utiles à qui installe l'app.
+        run: |
+          notes="$(awk 'BEGIN {keep = 1} /^#+ /{keep = ($0 ~ /^#+ \[/ || $0 ~ /Nouveautés|Corrections|Performances|Dépendances|Retours en arrière|BREAKING/)} keep' <<<"$CHANGELOG")"
+          if ! grep -q '^\* ' <<<"$notes"; then
+            notes+=$'\n\nAméliorations internes, sans changement visible.'
+          fi
+          {
+            printf '%s\n\n' "$notes"
+            printf '## Installer\n\nTélécharger `alwaysclock-%s.apk` ci-dessous et l’ouvrir sur le téléphone.\n' "$TAG"
+          } > "$RUNNER_TEMP/notes.md"
+          cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: APK de l'essai à blanc
+        if: inputs.dry_run
+        uses: actions/upload-artifact@v7
+        with:
+          name: alwaysclock-release-essai
+          path: app/build/outputs/apk/release/app-release.apk
+      - name: Créer la release
+        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           apk="alwaysclock-$TAG.apk"
           cp app/build/outputs/apk/release/app-release.apk "$apk"
           sha256sum "$apk" > "$apk.sha256"
-          gh release upload "$TAG" "$apk" "$apk.sha256" --clobber
+          gh release create "$TAG" "$apk" "$apk.sha256" --target "$GITHUB_SHA" --title "AlwaysClock $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md"

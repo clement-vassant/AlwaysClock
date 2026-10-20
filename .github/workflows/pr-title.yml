@@ -1,7 +1,7 @@
 name: Titre de PR
 
-# Les PR sont mergées en squash : leur titre devient le message de commit sur main, que release-please lit
-# pour choisir la prochaine version (feat = mineure, fix = correctif, ! = majeure) et écrire les notes.
+# Les PR sont mergées en squash : leur titre devient le message de commit sur main, que le workflow
+# Release lit pour choisir la prochaine version (feat = mineure, fix = correctif, ! = majeure).
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]

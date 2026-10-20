@@ -5,26 +5,26 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.click
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shodo.standbyclock.ClockPrefs
 import io.shodo.standbyclock.ClockStyle
 import io.shodo.standbyclock.NowPlaying
+import java.time.Clock
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.Clock
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 @RunWith(AndroidJUnit4::class)
 class StandByScreenTest {
@@ -37,11 +37,15 @@ class StandByScreenTest {
     // Mardi 20 octobre 2026, 14:15 : heure paire (horloge à gauche), en plein jour.
     private val clock = Clock.fixed(
         ZonedDateTime.of(2026, 10, 20, 14, 15, 0, 0, ZoneId.of("Europe/Paris")).toInstant(),
-        ZoneId.of("Europe/Paris"),
+        ZoneId.of("Europe/Paris")
     )
     private val music = NowPlaying(
-        title = "One More Night", artist = "Maroon 5", art = null,
-        isPlaying = true, pausedAt = 0L, liked = false,
+        title = "One More Night",
+        artist = "Maroon 5",
+        art = null,
+        isPlaying = true,
+        pausedAt = 0L,
+        liked = false
     )
 
     @Before
@@ -52,8 +56,12 @@ class StandByScreenTest {
 
     private fun show(media: NowPlaying? = null) = rule.setContent {
         StandByScreen(
-            prefs = prefs, forcedTheme = null, onNightModeChanged = {}, onOpenSettings = null,
-            clock = clock, nowPlayingSource = { media },
+            prefs = prefs,
+            forcedTheme = null,
+            onNightModeChanged = {},
+            onOpenSettings = null,
+            clock = clock,
+            nowPlayingSource = { media }
         )
     }
 

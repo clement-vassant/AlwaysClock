@@ -13,7 +13,6 @@ class MediaListenerService : NotificationListenerService() {
     companion object {
         fun component(context: Context) = ComponentName(context, MediaListenerService::class.java)
 
-        fun isGranted(context: Context) =
-            context.packageName in NotificationManagerCompat.getEnabledListenerPackages(context)
+        fun isGranted(context: Context) = context.packageName in NotificationManagerCompat.getEnabledListenerPackages(context)
     }
 }

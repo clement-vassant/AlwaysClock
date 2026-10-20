@@ -62,7 +62,7 @@ fun DigitalClock(now: ZonedDateTime, colors: ClockColors, showSeconds: Boolean) 
                     ":",
                     color = if (!showSeconds || now.second % 2 == 0) colors.secondary else colors.secondary.copy(alpha = 0.3f),
                     fontSize = digits,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
                 Text("%02d".format(now.minute), color = colors.accent, fontSize = digits, fontWeight = FontWeight.Bold)
             }
@@ -77,7 +77,7 @@ fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boole
     Row(
         Modifier.fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         if (showDate) {
             AnalogDial(now, colors, showSeconds, Modifier.fillMaxHeight(0.8f).aspectRatio(1f))
@@ -92,7 +92,12 @@ fun AnalogClockWithDate(now: ZonedDateTime, colors: ClockColors, showDate: Boole
         }
         if (showDate) {
             Column {
-                Text(now.format(DateTimeFormatter.ofPattern("EEEE", Locale.FRENCH)).uppercase(), color = colors.accent, fontSize = 30.sp, fontWeight = FontWeight.SemiBold)
+                Text(
+                    now.format(DateTimeFormatter.ofPattern("EEEE", Locale.FRENCH)).uppercase(),
+                    color = colors.accent,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
                 Text(now.dayOfMonth.toString(), color = colors.primary, fontSize = 140.sp, fontWeight = FontWeight.Bold)
                 Text(now.format(DateTimeFormatter.ofPattern("MMMM", Locale.FRENCH)), color = colors.secondary, fontSize = 30.sp)
             }
@@ -122,10 +127,7 @@ fun AnalogDial(now: ZonedDateTime, colors: ClockColors, showSeconds: Boolean, mo
 }
 
 /** Trait radial ; [fraction] = 0 à midi, sens horaire. */
-private fun DrawScope.drawRadial(
-    c: Offset, fraction: Float, from: Float, to: Float,
-    color: Color, width: Float,
-) {
+private fun DrawScope.drawRadial(c: Offset, fraction: Float, from: Float, to: Float, color: Color, width: Float) {
     val a = fraction * 2 * PI - PI / 2
     val dx = cos(a).toFloat()
     val dy = sin(a).toFloat()
@@ -159,7 +161,9 @@ fun MonthCalendar(now: ZonedDateTime, colors: ClockColors) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
                 Text(
                     now.format(DateTimeFormatter.ofPattern("MMMM", Locale.FRENCH)).uppercase(),
-                    color = colors.accent, fontSize = (cell * 0.5f).asSp(), fontWeight = FontWeight.SemiBold,
+                    color = colors.accent,
+                    fontSize = (cell * 0.5f).asSp(),
+                    fontWeight = FontWeight.SemiBold
                 )
                 Text(now.year.toString(), color = colors.secondary, fontSize = text)
             }
@@ -188,7 +192,7 @@ fun MonthCalendar(now: ZonedDateTime, colors: ClockColors) {
                                         else -> colors.primary
                                     },
                                     fontSize = text,
-                                    fontWeight = if (day == today) FontWeight.Bold else FontWeight.Normal,
+                                    fontWeight = if (day == today) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                         }

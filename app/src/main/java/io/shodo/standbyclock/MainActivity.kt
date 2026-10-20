@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                 prefs = prefs,
                 forcedTheme = forcedTheme.value,
                 onNightModeChanged = ::applyBrightness,
-                onOpenSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
+                onOpenSettings = { startActivity(Intent(this, SettingsActivity::class.java)) }
             )
         }
     }

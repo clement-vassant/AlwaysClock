@@ -1,11 +1,11 @@
 package io.shodo.standbyclock
 
+import java.time.LocalTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.LocalTime
 
 class ClockPrefsTest {
     private val pkg = "io.shodo.standbyclock"

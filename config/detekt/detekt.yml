@@ -1,0 +1,36 @@
+# Complète la configuration par défaut de detekt (buildUponDefaultConfig = true).
+
+style:
+  MaxLineLength:
+    maxLineLength: 140
+  MagicNumber:
+    # Les tailles d'interface (fractions, dp) et les tests restent lisibles sans constante pour chaque nombre.
+    excludes: ['**/test/**', '**/androidTest/**']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreNamedArgument: true
+    ignoreAnnotated: ['Composable']
+    ignoreExtensionFunctions: true
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+    excludes: ['**/test/**', '**/androidTest/**']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][_A-Z0-9]*'
+
+complexity:
+  LongParameterList:
+    functionThreshold: 8
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable']
+  LongMethod:
+    ignoreAnnotated: ['Composable']
+
+Compose:
+  ModifierMissing:
+    active: false
+  CompositionLocalAllowlist:
+    active: true

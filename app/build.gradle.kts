@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 android {
@@ -31,6 +33,30 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        // Les avertissements importants font échouer la CI ; les avertissements de mise à jour de dépendances
+        // sont suivis par Dependabot et ne bloquent pas.
+        warningsAsErrors = true
+        abortOnError = true
+        checkDependencies = true
+        disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion", "OldTargetApi")
+    }
+}
+
+ktlint {
+    android.set(true)
+}
+
+detekt {
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+}
+
+// detekt 1.23 est compilé avec Kotlin 2.0.21 : il doit tourner avec cette version, pas celle du projet.
+configurations.matching { it.name == "detekt" }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") useVersion("2.0.21")
+    }
 }
 
 kotlin {
@@ -58,4 +84,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    ktlintRuleset("io.nlopez.compose.rules:ktlint:0.6.8")
+    detektPlugins("io.nlopez.compose.rules:detekt:0.4.28")
 }

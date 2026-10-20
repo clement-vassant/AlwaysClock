@@ -30,14 +30,13 @@ class NowPlaying(
     val previous: () -> Unit = {},
     val next: () -> Unit = {},
     val playPause: () -> Unit = {},
-    val toggleLike: () -> Unit = {},
+    val toggleLike: () -> Unit = {}
 ) {
     fun isRecent(nowMillis: Long): Boolean = isRecentMedia(isPlaying, pausedAt, nowMillis)
 }
 
 /** La carte musique s'affiche en lecture, ou en pause depuis moins de 10 minutes. */
-fun isRecentMedia(isPlaying: Boolean, pausedAt: Long, nowMillis: Long): Boolean =
-    isPlaying || nowMillis - pausedAt < 10 * 60_000L
+fun isRecentMedia(isPlaying: Boolean, pausedAt: Long, nowMillis: Long): Boolean = isPlaying || nowMillis - pausedAt < 10 * 60_000L
 
 private val likeWords = listOf("like", "heart", "favorite", "favourite", "love", "library", "save", "collection", "favori", "j'aime")
 private val unlikeWords = listOf("remove", "unlike", "unfavorite", "unsave", "dislike", "supprimer", "retirer")
@@ -90,7 +89,7 @@ private fun MediaController.toNowPlaying(): NowPlaying? {
                 likeAction != null -> controls.sendCustomAction(likeAction, null)
                 heartRating -> controls.setRating(Rating.newHeartRating(liked != true))
             }
-        },
+        }
     )
 }
 
@@ -135,8 +134,11 @@ private class NowPlayingTracker(context: Context, private val onChange: (NowPlay
         pick(manager.safeSessions())
     }
 
-    private fun MediaSessionManager.safeSessions(): List<MediaController> =
-        try { getActiveSessions(component) } catch (e: SecurityException) { emptyList() }
+    private fun MediaSessionManager.safeSessions(): List<MediaController> = try {
+        getActiveSessions(component)
+    } catch (e: SecurityException) {
+        emptyList()
+    }
 
     private fun pick(sessions: List<MediaController>) {
         val best = sessions.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING } ?: sessions.firstOrNull()

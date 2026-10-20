@@ -34,10 +34,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.shodo.standbyclock.ui.DayColors
+import io.shodo.standbyclock.ui.TAG_CALENDAR_SWITCH
 
 /** Réglages : style, calendrier, jour/nuit, plage horaire de nuit et extinction automatique. Ouvert aussi par le ⚙ de l'écran de veille. */
 class SettingsActivity : ComponentActivity() {
@@ -76,7 +78,7 @@ class SettingsActivity : ComponentActivity() {
 }
 
 @Composable
-private fun SettingsScreen(
+internal fun SettingsScreen(
     prefs: ClockPrefs,
     pickTime: (Int, (Int) -> Unit) -> Unit,
     onLaunch: () -> Unit,
@@ -118,9 +120,16 @@ private fun SettingsScreen(
             }
         }
 
+        // Le calendrier n'a pas de côté fixe : il échange sa place avec l'horloge chaque heure (anti-marquage OLED).
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Calendrier à droite de l'horloge", Modifier.weight(1f))
-            Switch(checked = calendar, onCheckedChange = {
+            Column(Modifier.weight(1f)) {
+                Text("Afficher le calendrier")
+                Text(
+                    "Il change de côté avec l'horloge chaque heure, pour protéger l'écran du marquage.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Switch(checked = calendar, modifier = Modifier.testTag(TAG_CALENDAR_SWITCH), onCheckedChange = {
                 calendar = it
                 prefs.showCalendar = it
             })

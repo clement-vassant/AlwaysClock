@@ -6,13 +6,14 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
 }
 
-// Version de l'app au format SemVer X.Y.Z, tenue à jour par release-please à chaque release (voir CONTRIBUTING.md).
-val appVersionName = rootProject.file("version.txt").readText().trim()
+// Version SemVer de l'app : la release la passe en -PappVersion=X.Y.Z (voir release.yml) ;
+// les builds locaux et de PR portent une version de développement.
+val appVersionName = providers.gradleProperty("appVersion").getOrElse("0.0.1-dev")
 
 // Android n'accepte une mise à jour que si versionCode augmente : X.Y.Z devient X*10000 + Y*100 + Z.
 val versionCodeStep = 100
 val appVersionCode =
-    appVersionName.split(".").map(String::toInt).let { (major, minor, patch) ->
+    appVersionName.substringBefore("-").split(".").map(String::toInt).let { (major, minor, patch) ->
         require(minor < versionCodeStep && patch < versionCodeStep) { "versionCode ne peut pas encoder $appVersionName" }
         (major * versionCodeStep + minor) * versionCodeStep + patch
     }

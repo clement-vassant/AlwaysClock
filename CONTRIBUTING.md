@@ -30,17 +30,23 @@ Dependabot propose chaque semaine les mises à jour Gradle et chaque mois celles
 
 ## Titres de PR et releases
 
-Les PR sont mergées en squash et leur titre suit [Conventional Commits](https://www.conventionalcommits.org/fr/), vérifié par le workflow « Titre de PR » :
+Les PR sont mergées en squash et leur titre suit [Conventional Commits](https://www.conventionalcommits.org/fr/), vérifié par le workflow « Titre de PR ». Ce titre devient le message du commit sur `main`.
 
-| Préfixe | Effet sur la version (SemVer) | Dans les notes de release |
-|---|---|---|
-| `feat:` | mineure (0.1.0 → 0.2.0) | Nouveautés |
-| `fix:`, `perf:` | correctif (0.1.0 → 0.1.1) | Corrections, Performances |
-| `deps:` | correctif | Dépendances (PR Dependabot Gradle) |
-| `feat!:` ou pied `BREAKING CHANGE:` | majeure (avant 1.0 : mineure) | mis en avant |
-| `docs:`, `test:`, `refactor:`, `ci:`, `build:`, `chore:` | aucune release | masqués |
+**Publier une release** : onglet Actions > **Release** > **Run workflow** (sur `main`). Le workflow :
 
-Le workflow `release.yml` ([release-please](https://github.com/googleapis/release-please)) tient à jour une PR « chore: release X.Y.Z » qui modifie `version.txt` et `CHANGELOG.md`. La CI y est lancée automatiquement. **Merger cette PR publie la release** : tag `vX.Y.Z`, release GitHub avec ses notes et l'APK signé `alwaysclock-vX.Y.Z.apk` (avec son empreinte SHA-256). `versionName` vaut `X.Y.Z` et `versionCode` `X*10000 + Y*100 + Z`, calculés depuis `version.txt`. Pour forcer un numéro, ajouter le pied `Release-As: X.Y.Z` au message du commit de merge.
+1. part du dernier tag `vX.Y.Z` (la toute première release est `0.1.0`) ;
+2. choisit la version suivante d'après les commits depuis ce tag, ou d'après le saut choisi dans le menu :
+
+   | Commits depuis la dernière release | Version (SemVer) |
+   |---|---|
+   | au moins un `feat!:` ou un pied `BREAKING CHANGE:` | majeure (avant 1.0 : mineure) |
+   | au moins un `feat:` | mineure (0.1.0 → 0.2.0) |
+   | sinon (`fix:`, `perf:`, `deps:`, `docs:`…) | correctif (0.1.0 → 0.1.1) |
+
+3. compile l'APK release avec `versionName` = `X.Y.Z` et `versionCode` = `X*10000 + Y*100 + Z` ;
+4. crée le tag, la release GitHub avec les notes générées depuis les titres des PR, et y attache `alwaysclock-vX.Y.Z.apk` et son empreinte SHA-256.
+
+La version n'est écrite dans aucun fichier : les builds locaux et de PR portent `0.0.1-dev`.
 
 ### Clé de signature
 

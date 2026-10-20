@@ -14,3 +14,4 @@ if [[ "${1:-}" == "--all" ]]; then
     tasks+=(connectedDebugAndroidTest)
 fi
 gradle "${tasks[@]}"
+scripts/next-version-test.sh

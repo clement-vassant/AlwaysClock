@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 
@@ -150,16 +151,9 @@ private fun SettingsScreen(
         Button(onClick = onLaunch, modifier = Modifier.fillMaxWidth()) { Text("Lancer l'horloge") }
 
         Section("Lancement automatique") {
-            Text(
-                "Pendant la charge : activez l'écran de veille « StandBy Clock » avec « Pendant la charge ».",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Text(stringResource(R.string.help_screen_saver), style = MaterialTheme.typography.bodyMedium)
             OutlinedButton(onClick = onOpenScreenSaver) { Text("Ouvrir les réglages d'écran de veille") }
-            Text(
-                "À heure fixe ou selon un mode : dans Modes et routines, ajoutez l'action « Ouvrir une app » " +
-                    "et choisissez « Horloge jour », « Horloge nuit » ou « StandBy Clock » (mode Auto).",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Text(stringResource(R.string.help_routines), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

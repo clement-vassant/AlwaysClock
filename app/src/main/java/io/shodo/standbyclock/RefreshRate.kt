@@ -3,9 +3,9 @@ package io.shodo.standbyclock
 import android.view.Window
 
 /**
- * Demande le mode le plus lent de l'écran courant (60 Hz au lieu de 120 sur le Fold) :
+ * Demande le mode le plus lent de l'écran courant (souvent 60 Hz au lieu de 120) :
  * une horloge n'a pas besoin de plus, et l'écran consomme moins.
- * À rappeler quand l'écran change (Fold plié ou déplié).
+ * À rappeler quand l'écran change (écran pliable plié ou déplié).
  */
 fun Window.preferLowestRefreshRate() {
     val display = decorView.display ?: return

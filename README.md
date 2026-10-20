@@ -4,17 +4,17 @@
 
 **Le mode StandBy de l'iPhone sur Android : une grande horloge en paysage pendant que le téléphone charge.**
 
-Fonctionne sur tout téléphone Android 10 ou plus récent. Testée sur un Galaxy Z Fold, sur ses deux écrans : l'écran extérieur, téléphone plié, et le grand écran déplié.
+Fonctionne sur tout téléphone ou tablette Android 10 ou plus récent. Appareil de test : un Galaxy Z Fold (voir [Écrans pliables](#écrans-pliables)).
 
-| Écran extérieur du Fold, mode nuit | Écran extérieur du Fold, analogique |
+| Téléphone, mode nuit | Téléphone, analogique et calendrier |
 |---|---|
-| ![Horloge digitale en mode nuit sur l'écran extérieur du Fold](screenshots/fold-01.png) | ![Horloge analogique et calendrier sur l'écran extérieur du Fold](screenshots/fold-analog.png) |
+| ![Horloge digitale en mode nuit sur un téléphone](screenshots/fold-01.png) | ![Horloge analogique et calendrier sur un téléphone](screenshots/fold-analog.png) |
 | **Grand écran, Digital** | **Grand écran, Minimal en mode nuit** |
 | ![Horloge digitale et calendrier sur le grand écran](screenshots/01-digital.png) | ![Horloge minimale en mode nuit sur le grand écran](screenshots/04-minimal-nuit.png) |
 
 ## Pourquoi
 
-Samsung ne laisse aucune app tierce dessiner sur l'Always On Display. AlwaysClock passe donc par deux autres moyens :
+Sur Android, l'écran toujours allumé (Always On Display) est réservé au système et au fabricant : une app ne peut pas y dessiner. AlwaysClock passe donc par deux autres moyens :
 
 - **l'écran de veille Android**, qui se lance tout seul quand le téléphone charge ;
 - **une app plein écran**, à ouvrir soi-même : le téléphone passe en paysage et l'écran reste allumé.
@@ -31,7 +31,7 @@ Samsung ne laisse aucune app tierce dessiner sur l'Always On Display. AlwaysCloc
   - appui long pour afficher ou masquer le calendrier ;
   - double toucher pour ouvrir les réglages.
 - **Lancement pendant la charge** grâce à l'écran de veille Android.
-- **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis *Modes et routines* (Samsung) ou depuis tout autre outil d'automatisation capable d'ouvrir une app (Tasker, par exemple), à heure fixe ou au début d'un mode.
+- **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis vos routines ou outils d'automatisation (par exemple *Modes et routines* sur Samsung, ou Tasker), à heure fixe ou au début d'un mode.
 - **Réglages** : style, calendrier, musique en cours, jour/nuit et plage de nuit, délai d'extinction.
 - **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
@@ -75,18 +75,24 @@ Le plus simple : récupérer l'APK déjà compilé dans l'onglet [Actions](https
 - Les prochains événements de l'agenda à côté de l'horloge.
 - Musique : barre de progression et choix du lecteur quand plusieurs jouent.
 
-## Programmer avec Modes et routines
+## Programmer avec vos routines
 
-Les entrées **Horloge jour** et **Horloge nuit** forcent le mode pour ce lancement (*StandBy Clock* suit le mode Auto) :
-1. Paramètres > Modes et routines > Routines > **+**.
-2. *Si* : par exemple **Heure** (22:30, tous les jours) et/ou **En charge**, ou le début d'un mode (Sommeil...).
-3. *Alors* : **Applications > Ouvrir une app** > *Horloge nuit* (ou *Horloge jour*, ou *StandBy Clock*).
+Les entrées **Horloge jour** et **Horloge nuit** forcent le mode pour ce lancement (*StandBy Clock* suit le mode Auto). Elles se lancent depuis n'importe quel outil d'automatisation capable d'ouvrir une app : Tasker, Automate, ou les routines intégrées de certains fabricants. Le principe :
+1. créer une routine ;
+2. *Si* : par exemple une **heure** (22:30, tous les jours), **en charge**, ou le début d'un mode (Sommeil...) ;
+3. *Alors* : **ouvrir une app** > *Horloge nuit* (ou *Horloge jour*, ou *StandBy Clock*).
 
-Sur d'autres téléphones, ces mêmes entrées se lancent depuis Tasker ou tout outil capable d'ouvrir une app. Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil (Paramètres de l'écran d'accueil > Masquer des applications) ; elles devraient rester proposées dans les routines (non vérifié).
+Exemple sur Samsung : Paramètres > Modes et routines > Routines > **+**, puis *Applications > Ouvrir une app*.
+
+Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil selon le lanceur ; elles devraient rester proposées dans les routines (non vérifié).
+
+## Écrans pliables
+
+Sur un téléphone pliable, l'horloge s'affiche sur l'écran actif : l'écran extérieur quand il est plié (posé sur un dock, par exemple), le grand écran quand il est ouvert. Les captures ci-dessus viennent de l'écran extérieur d'un Galaxy Z Fold. Tenu ouvert en portrait, Android 16 affiche l'horloge dans une bande paysage au lieu de faire tourner l'écran.
 
 ## Protection de l'écran
 
-Samsung conseille d'éviter les images fixes affichées longtemps, de baisser la luminosité et de préférer les fonds sombres. L'app applique :
+Les fabricants d'écrans OLED (Samsung notamment) conseillent d'éviter les images fixes affichées longtemps, de baisser la luminosité et de préférer les fonds sombres. L'app applique :
 
 - **Fond noir pur** : les pixels OLED du fond restent éteints.
 - **Orbite anti-marquage** : tout le contenu se déplace chaque minute sur une spirale lente jusqu'à ±20 dp, sans jamais rester deux minutes au même endroit.
@@ -94,7 +100,7 @@ Samsung conseille d'éviter les images fixes affichées longtemps, de baisser la
 - **Moins de pixels allumés** : pas de blanc pur (gris clair `#BDBDBD` le jour), jour du calendrier entouré d'un anneau fin plutôt que d'un disque plein, mode nuit rouge sombre.
 - **Luminosité plafonnée** : 35 % le jour, minimale la nuit (dans l'app) ; l'écran de veille demande un écran atténué.
 - **Arrêt automatique** : réglage *Éteindre après* (1 h, 2 h, 4 h, 8 h, Jamais ; 2 h par défaut). Le délai écoulé, l'horloge se ferme et l'écran peut s'éteindre normalement.
-- **Économie d'énergie** : la nuit, ni trotteuse ni deux-points clignotants, et l'affichage n'est redessiné qu'une fois par minute (1 image par minute au lieu de 60 mesurée sur le Fold). L'app demande aussi le taux de rafraîchissement le plus bas de l'écran (60 Hz au lieu de 120 sur le Fold).
+- **Économie d'énergie** : la nuit, ni trotteuse ni deux-points clignotants, et l'affichage n'est redessiné qu'une fois par minute (1 image par minute au lieu de 60, mesuré sur l'appareil de test). L'app demande aussi le taux de rafraîchissement le plus bas de l'écran (souvent 60 Hz au lieu de 120).
 
 ## Compiler l'APK
 
@@ -122,7 +128,7 @@ Dans un shell où mise est activé, `./gradlew assembleDebug` suffit.
 
 ## Activer le mode automatique en charge
 
-Paramètres > Affichage > **Écran de veille** (sur certaines versions de One UI : Paramètres > Affichage > Écran de veille / *Screen saver*) :
+Paramètres > Affichage > **Écran de veille** (le chemin varie selon les fabricants ; chercher « Écran de veille » ou *Screen saver* dans les Paramètres) :
 1. Choisir **StandBy Clock**.
 2. Quand démarrer : **Pendant la charge**.
 

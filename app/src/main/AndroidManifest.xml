@@ -25,7 +25,7 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
-        <!-- Entrées « Horloge jour » / « Horloge nuit » : visibles dans « Ouvrir une app » de Modes et routines. -->
+        <!-- Entrées « Horloge jour » / « Horloge nuit » : proposées par les routines et outils d'automatisation qui savent ouvrir une app. -->
         <activity-alias
             android:name=".DayClock"
             android:exported="true"

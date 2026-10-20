@@ -88,5 +88,5 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     ktlintRuleset("io.nlopez.compose.rules:ktlint:0.6.8")
-    detektPlugins("io.nlopez.compose.rules:detekt:0.4.28")
+    detektPlugins("io.nlopez.compose.rules:detekt:0.6.8")
 }

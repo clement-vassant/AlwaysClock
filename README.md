@@ -134,7 +134,7 @@ Paramètres > Affichage > **Écran de veille** (le chemin varie selon les fabric
 
 Astuce : le bouton ⚙ de l'écran de veille ouvre les réglages de l'app.
 
-L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge (filaire ou par induction) : poser le téléphone écran allumé. Il s'affiche toujours en paysage : si l'écran est en portrait (rotation automatique coupée), l'horloge est tournée d'un quart de tour et se lit téléphone couché, haut de l'écran vers la gauche.
+L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge (filaire ou par induction) : poser le téléphone écran allumé. Réglage **Orientation de l'écran de veille** : *Automatique* suit l'écran (en portrait, horloge et calendrier l'un au-dessus de l'autre, qui échangent leur place chaque heure) ; *Toujours paysage* tourne l'horloge d'un quart de tour quand l'écran est en portrait (rotation automatique coupée), pour la lire téléphone couché, haut de l'écran vers la gauche.
 
 ## Tests
 

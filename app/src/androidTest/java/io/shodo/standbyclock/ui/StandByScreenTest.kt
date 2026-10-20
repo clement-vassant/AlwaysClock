@@ -93,6 +93,26 @@ class StandByScreenTest {
         rule.onNodeWithTag(TAG_CALENDAR).assertIsDisplayed()
     }
 
+    // Orientation automatique sur un écran en portrait : à 14 h (heure paire), l'horloge est au-dessus du calendrier.
+    @Test
+    fun portraitScreenStacksClockAboveCalendar() {
+        rule.setContent {
+            Box(Modifier.size(width = 400.dp, height = 800.dp)) {
+                StandByScreen(
+                    prefs = prefs,
+                    forcedTheme = null,
+                    onNightModeChange = {},
+                    onOpenSettings = null,
+                    clock = clock,
+                    nowPlayingSource = { null }
+                )
+            }
+        }
+        val clockBounds = rule.onNodeWithTag(clockTag(ClockStyle.DIGITAL)).getBoundsInRoot()
+        val calendarBounds = rule.onNodeWithTag(TAG_CALENDAR).getBoundsInRoot()
+        assertTrue("horloge attendue au-dessus du calendrier", clockBounds.bottom <= calendarBounds.top)
+    }
+
     @Test
     fun calendarIsShownByDefault() {
         show()

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shodo.standbyclock.ui.TAG_CALENDAR_SWITCH
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Rule
@@ -45,6 +46,13 @@ class SettingsScreenTest {
         rule.onNodeWithText("Afficher le calendrier").assertExists()
         rule.onNodeWithText("à droite", substring = true).assertDoesNotExist()
         rule.onNodeWithTag(TAG_CALENDAR_SWITCH).assertIsOn()
+    }
+
+    @Test
+    fun orientationCanBeForcedToLandscape() {
+        assertEquals(OrientationMode.AUTO, prefs.orientation)
+        rule.onNodeWithText("Toujours paysage").performClick()
+        assertEquals(OrientationMode.LANDSCAPE, prefs.orientation)
     }
 
     @Test

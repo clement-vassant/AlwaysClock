@@ -3,9 +3,9 @@ package io.shodo.standbyclock.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -168,27 +168,40 @@ private fun rememberStylePager(prefs: ClockPrefs, resumes: Int): PagerState {
 }
 
 /**
- * Une page du pager : l'horloge et son panneau. Anti-marquage : le tout suit une orbite lente
- * (nouvelle position chaque minute) et l'horloge change de côté chaque heure.
+ * Une page du pager : l'horloge et son panneau, côte à côte en paysage, l'un au-dessus de l'autre en portrait.
+ * Anti-marquage : le tout suit une orbite lente (nouvelle position chaque minute) et l'horloge échange
+ * sa place avec le panneau chaque heure.
  */
 @Composable
 private fun ClockAndSidePane(style: ClockStyle, state: ScreenState) {
     val epochMinute = state.now.toEpochSecond() / SECONDS_PER_MINUTE
     val shift = remember(epochMinute) { orbitOffset(epochMinute) }
     val clockFirst = clockOnLeft(state.now.hour)
-    Row(
-        Modifier
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val portrait = isPortrait(constraints.maxWidth, constraints.maxHeight)
+        val orbit = Modifier
             .fillMaxSize()
-            .padding(horizontal = 40.dp, vertical = 24.dp)
-            .offset { IntOffset((shift.x * density).roundToInt(), (shift.y * density).roundToInt()) },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (state.hasSidePane && !clockFirst) SidePane(state)
-        Box(Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxHeight().testTag(clockTag(style)), contentAlignment = Alignment.Center) {
-            ClockFace(style, state)
+            .padding(horizontal = if (portrait) 24.dp else 40.dp, vertical = if (portrait) 40.dp else 24.dp)
+            .offset { IntOffset((shift.x * density).roundToInt(), (shift.y * density).roundToInt()) }
+        if (portrait) {
+            Column(orbit, horizontalAlignment = Alignment.CenterHorizontally) {
+                if (state.hasSidePane && !clockFirst) SidePane(state, Modifier.weight(1f).fillMaxWidth())
+                ClockPane(style, state, Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxWidth())
+                if (state.hasSidePane && clockFirst) SidePane(state, Modifier.weight(1f).fillMaxWidth())
+            }
+        } else {
+            Row(orbit, verticalAlignment = Alignment.CenterVertically) {
+                if (state.hasSidePane && !clockFirst) SidePane(state, Modifier.weight(1f).fillMaxHeight())
+                ClockPane(style, state, Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxHeight())
+                if (state.hasSidePane && clockFirst) SidePane(state, Modifier.weight(1f).fillMaxHeight())
+            }
         }
-        if (state.hasSidePane && clockFirst) SidePane(state)
     }
+}
+
+@Composable
+private fun ClockPane(style: ClockStyle, state: ScreenState, modifier: Modifier = Modifier) {
+    Box(modifier.testTag(clockTag(style)), contentAlignment = Alignment.Center) { ClockFace(style, state) }
 }
 
 @Composable
@@ -211,13 +224,13 @@ private fun ClockFace(style: ClockStyle, state: ScreenState) {
 }
 
 /**
- * Panneau à côté de l'horloge : le calendrier, avec la musique en cours en barre compacte dessous.
- * Calendrier masqué (appui long) : la musique a tout le panneau.
+ * Panneau à côté de l'horloge (ou dessous en portrait) : le calendrier, avec la musique en cours en barre
+ * compacte dessous. Calendrier masqué (appui long) : la musique a tout le panneau.
  */
 @Composable
-private fun RowScope.SidePane(state: ScreenState) {
+private fun SidePane(state: ScreenState, modifier: Modifier = Modifier) {
     val media = state.media
-    Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+    Box(modifier, contentAlignment = Alignment.Center) {
         when {
             media == null -> MonthCalendar(state.now, state.colors)
 
@@ -233,7 +246,7 @@ private fun RowScope.SidePane(state: ScreenState) {
     }
 }
 
-/** Heures paires : horloge à gauche ; heures impaires : à droite (anti-marquage). */
+/** Heures paires : horloge à gauche (en haut en portrait) ; heures impaires : à droite (en bas) (anti-marquage). */
 fun clockOnLeft(hour: Int) = hour % 2 == 0
 
 /**

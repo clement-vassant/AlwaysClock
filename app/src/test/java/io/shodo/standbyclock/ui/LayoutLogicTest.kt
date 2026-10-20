@@ -29,11 +29,11 @@ class LayoutLogicTest {
     }
 
     @Test
-    fun `screen saver turns only a portrait screen`() {
-        assertTrue(needsLandscapeRotation(width = 1080, height = 2520))
-        assertFalse(needsLandscapeRotation(width = 2520, height = 1080))
-        // Écran carré : rien à tourner.
-        assertFalse(needsLandscapeRotation(width = 1000, height = 1000))
+    fun `only a screen taller than wide is portrait`() {
+        assertTrue(isPortrait(width = 1080, height = 2520))
+        assertFalse(isPortrait(width = 2520, height = 1080))
+        // Écran carré : on garde la disposition côte à côte.
+        assertFalse(isPortrait(width = 1000, height = 1000))
     }
 
     @Test

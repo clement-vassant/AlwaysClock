@@ -10,6 +10,9 @@ enum class ClockStyle { DIGITAL, ANALOG, MINIMAL }
 /** Jour ou nuit : AUTO suit la plage horaire de nuit réglée dans l'app. */
 enum class ThemeMode { AUTO, DAY, NIGHT }
 
+/** Orientation de l'écran de veille : AUTO suit l'écran, LANDSCAPE tourne l'horloge si l'écran est en portrait. */
+enum class OrientationMode { AUTO, LANDSCAPE }
+
 /** Préférences partagées entre l'activité, l'écran de veille et les réglages. */
 class ClockPrefs(context: Context) {
     private val prefs = context.getSharedPreferences("standby_clock", Context.MODE_PRIVATE)
@@ -40,6 +43,10 @@ class ClockPrefs(context: Context) {
     var showMedia: Boolean
         get() = prefs.getBoolean("media", true)
         set(value) = prefs.edit { putBoolean("media", value) }
+
+    var orientation: OrientationMode
+        get() = OrientationMode.entries.getOrElse(prefs.getInt("orientation", 0)) { OrientationMode.AUTO }
+        set(value) = prefs.edit { putInt("orientation", value.ordinal) }
 
     /** Délai avant extinction automatique, en minutes ; 0 = jamais (2 h par défaut). */
     var autoOffMinutes: Int

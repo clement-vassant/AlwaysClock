@@ -60,13 +60,14 @@ class StandByDreamService :
             setViewTreeSavedStateRegistryOwner(this@StandByDreamService)
             setViewTreeViewModelStoreOwner(this@StandByDreamService)
             setContent {
-                // Un écran de veille ne peut pas imposer le paysage : on tourne nous-mêmes l'horloge si besoin.
+                // Un écran de veille ne peut pas imposer le paysage : si l'utilisateur le veut, on tourne nous-mêmes l'horloge.
+                val orientation = if (prefs.orientation == OrientationMode.LANDSCAPE) Modifier.forceLandscape() else Modifier
                 StandByScreen(
                     prefs = prefs,
                     forcedTheme = null,
                     onNightModeChange = {},
                     onOpenSettings = null,
-                    modifier = Modifier.forceLandscape()
+                    modifier = orientation
                 )
             }
         }

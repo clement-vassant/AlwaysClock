@@ -7,18 +7,19 @@ import androidx.compose.ui.unit.Constraints
 /** Quart de tour (degrés) appliqué au contenu pour le passer de portrait en paysage. */
 const val QUARTER_TURN_DEGREES = 90f
 
-/** Un écran plus haut que large est en portrait : l'horloge doit alors être tournée d'un quart de tour. */
-fun needsLandscapeRotation(width: Int, height: Int) = height > width
+/** Un écran plus haut que large est en portrait : horloge et calendrier s'empilent, ou l'horloge est tournée. */
+fun isPortrait(width: Int, height: Int) = height > width
 
 /**
- * Affiche toujours le contenu en paysage. Un écran de veille n'est pas une activité : il ne peut pas
- * demander l'orientation paysage, et reste en portrait si la rotation automatique est coupée.
+ * Affiche toujours le contenu en paysage (réglage « Toujours paysage »). Un écran de veille n'est pas
+ * une activité : il ne peut pas demander l'orientation paysage, et reste en portrait si la rotation
+ * automatique est coupée.
  * En portrait, on mesure donc le contenu avec largeur et hauteur échangées, puis on le tourne d'un quart
  * de tour dans le sens horaire : il se lit téléphone couché, haut de l'écran vers la gauche.
  */
 fun Modifier.forceLandscape(): Modifier = layout { measurable, constraints ->
     val bounded = constraints.hasBoundedWidth && constraints.hasBoundedHeight
-    if (!bounded || !needsLandscapeRotation(constraints.maxWidth, constraints.maxHeight)) {
+    if (!bounded || !isPortrait(constraints.maxWidth, constraints.maxHeight)) {
         val placeable = measurable.measure(constraints)
         return@layout layout(placeable.width, placeable.height) { placeable.place(0, 0) }
     }

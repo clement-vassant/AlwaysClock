@@ -39,13 +39,13 @@ internal fun ClockAndSidePane(style: ClockStyle, state: ScreenState) {
         if (portrait) {
             Column(orbit, horizontalAlignment = Alignment.CenterHorizontally) {
                 if (state.hasSidePane && !clockFirst) SidePane(state, Modifier.weight(1f).fillMaxWidth())
-                ClockPane(style, state, Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxWidth())
+                ClockPane(style, state, portrait = true, modifier = Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxWidth())
                 if (state.hasSidePane && clockFirst) SidePane(state, Modifier.weight(1f).fillMaxWidth())
             }
         } else {
             Row(orbit, verticalAlignment = Alignment.CenterVertically) {
                 if (state.hasSidePane && !clockFirst) SidePane(state, Modifier.weight(1f).fillMaxHeight())
-                ClockPane(style, state, Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxHeight())
+                ClockPane(style, state, portrait = false, modifier = Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxHeight())
                 if (state.hasSidePane && clockFirst) SidePane(state, Modifier.weight(1f).fillMaxHeight())
             }
         }
@@ -53,12 +53,12 @@ internal fun ClockAndSidePane(style: ClockStyle, state: ScreenState) {
 }
 
 @Composable
-private fun ClockPane(style: ClockStyle, state: ScreenState, modifier: Modifier = Modifier) {
-    Box(modifier.testTag(clockTag(style)), contentAlignment = Alignment.Center) { ClockFace(style, state) }
+private fun ClockPane(style: ClockStyle, state: ScreenState, portrait: Boolean, modifier: Modifier = Modifier) {
+    Box(modifier.testTag(clockTag(style)), contentAlignment = Alignment.Center) { ClockFace(style, state, portrait) }
 }
 
 @Composable
-private fun ClockFace(style: ClockStyle, state: ScreenState) {
+private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean) {
     val (now, colors, night) = Triple(state.now, state.colors, state.night)
     when (style) {
         ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
@@ -68,8 +68,8 @@ private fun ClockFace(style: ClockStyle, state: ScreenState) {
             colors,
             showDate = !state.hasSidePane,
             showSeconds = !night,
-            // Barre musique sous le calendrier : il perd la hauteur de la barre.
-            calendarHeight = if (state.media != null && state.showCalendar) 1f / (1f + MEDIA_BAR_WEIGHT) else 1f
+            calendarWidth = sidePaneWidth(portrait),
+            calendarHeight = sidePaneHeight(portrait, withMediaBar = state.media != null && state.showCalendar)
         )
 
         ClockStyle.MINIMAL -> MinimalClock(now, colors)
@@ -97,4 +97,13 @@ private fun SidePane(state: ScreenState, modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+/** Largeur du calendrier en fraction de celle de l'horloge : moins large à côté, aussi large dessous. */
+internal fun sidePaneWidth(portrait: Boolean) = if (portrait) 1f else 1f / CLOCK_PANE_WEIGHT
+
+/** Hauteur du calendrier en fraction de celle de l'horloge ; la barre musique sous le calendrier lui prend sa hauteur. */
+internal fun sidePaneHeight(portrait: Boolean, withMediaBar: Boolean): Float {
+    val pane = if (portrait) 1f / CLOCK_PANE_WEIGHT else 1f
+    return if (withMediaBar) pane / (1f + MEDIA_BAR_WEIGHT) else pane
 }

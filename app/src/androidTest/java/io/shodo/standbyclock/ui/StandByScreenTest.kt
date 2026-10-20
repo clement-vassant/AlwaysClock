@@ -76,7 +76,7 @@ class StandByScreenTest {
     @Test
     fun portraitScreenSaverIsLaidOutInLandscape() {
         rule.setContent {
-            Box(Modifier.size(width = 400.dp, height = 800.dp)) {
+            Box(Modifier.size(width = 300.dp, height = 600.dp)) {
                 StandByScreen(
                     prefs = prefs,
                     forcedTheme = null,
@@ -97,7 +97,7 @@ class StandByScreenTest {
     @Test
     fun portraitScreenStacksClockAboveCalendar() {
         rule.setContent {
-            Box(Modifier.size(width = 400.dp, height = 800.dp)) {
+            Box(Modifier.size(width = 300.dp, height = 600.dp)) {
                 StandByScreen(
                     prefs = prefs,
                     forcedTheme = null,
@@ -111,6 +111,25 @@ class StandByScreenTest {
         val clockBounds = rule.onNodeWithTag(clockTag(ClockStyle.DIGITAL)).getBoundsInRoot()
         val calendarBounds = rule.onNodeWithTag(TAG_CALENDAR).getBoundsInRoot()
         assertTrue("horloge attendue au-dessus du calendrier", clockBounds.bottom <= calendarBounds.top)
+    }
+
+    // Portrait avec musique : le cadran analogique ne dépasse pas la hauteur du calendrier.
+    @Test
+    fun portraitAnalogDialIsNotTallerThanCalendarWithMusic() {
+        prefs.style = ClockStyle.ANALOG
+        rule.setContent {
+            Box(Modifier.size(width = 300.dp, height = 600.dp)) {
+                StandByScreen(
+                    prefs = prefs,
+                    forcedTheme = null,
+                    onNightModeChange = {},
+                    onOpenSettings = null,
+                    clock = clock,
+                    nowPlayingSource = { music }
+                )
+            }
+        }
+        assertDialFitsCalendar()
     }
 
     @Test

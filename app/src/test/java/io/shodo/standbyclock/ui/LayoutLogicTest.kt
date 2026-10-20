@@ -37,6 +37,18 @@ class LayoutLogicTest {
     }
 
     @Test
+    fun `calendar pane size relative to the clock`() {
+        // Paysage : à côté, moins large (1 / 1.4), même hauteur.
+        assertEquals(1f / CLOCK_PANE_WEIGHT, sidePaneWidth(portrait = false), 1e-6f)
+        assertEquals(1f, sidePaneHeight(portrait = false, withMediaBar = false), 1e-6f)
+        // Portrait : dessous, même largeur, moins haut.
+        assertEquals(1f, sidePaneWidth(portrait = true), 1e-6f)
+        assertEquals(1f / CLOCK_PANE_WEIGHT, sidePaneHeight(portrait = true, withMediaBar = false), 1e-6f)
+        // La barre musique prend sa part de hauteur au calendrier.
+        assertEquals(1f / CLOCK_PANE_WEIGHT / (1f + MEDIA_BAR_WEIGHT), sidePaneHeight(portrait = true, withMediaBar = true), 1e-6f)
+    }
+
+    @Test
     fun `clock side alternates every hour`() {
         assertTrue(clockOnLeft(0))
         assertFalse(clockOnLeft(1))

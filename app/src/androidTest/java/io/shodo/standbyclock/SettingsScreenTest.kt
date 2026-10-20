@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shodo.standbyclock.ui.TAG_CALENDAR_SWITCH
@@ -51,7 +52,7 @@ class SettingsScreenTest {
     @Test
     fun orientationCanBeForcedToLandscape() {
         assertEquals(OrientationMode.AUTO, prefs.orientation)
-        rule.onNodeWithText("Toujours paysage").performClick()
+        rule.onNodeWithText("Toujours paysage").performScrollTo().performClick()
         assertEquals(OrientationMode.LANDSCAPE, prefs.orientation)
     }
 

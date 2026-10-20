@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew ktlintCheck detekt lintDebug
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew testDebugUnitTest
@@ -58,7 +58,7 @@ jobs:
     env:
       API_LEVEL: 34
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       - name: Activer KVM
@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew assembleDebug

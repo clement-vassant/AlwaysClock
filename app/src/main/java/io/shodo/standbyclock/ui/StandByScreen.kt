@@ -4,19 +4,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -33,53 +35,58 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.shodo.standbyclock.ClockPrefs
 import io.shodo.standbyclock.ClockStyle
+import io.shodo.standbyclock.MILLIS_PER_MINUTE
+import io.shodo.standbyclock.MILLIS_PER_SECOND
 import io.shodo.standbyclock.NowPlaying
-import io.shodo.standbyclock.rememberNowPlaying
+import io.shodo.standbyclock.SECONDS_PER_MINUTE
 import io.shodo.standbyclock.ThemeMode
-import androidx.lifecycle.compose.LifecycleResumeEffect
-import kotlinx.coroutines.delay
+import io.shodo.standbyclock.rememberNowPlaying
 import java.time.Clock
 import java.time.ZonedDateTime
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlinx.coroutines.delay
 
-/** Palette d'une horloge : en mode nuit tout passe en rouge sombre (préserve la vision nocturne). */
-data class ClockColors(val primary: Color, val secondary: Color, val accent: Color)
+/** Largeur relative de l'horloge ; le panneau d'à côté (calendrier, musique) a une largeur de 1. */
+const val CLOCK_PANE_WEIGHT = 1.4f
 
-val DayColors = ClockColors(
-    primary = Color(0xFFBDBDBD),   // gris clair plutôt que blanc : moins d'usure OLED
-    secondary = Color(0xFF8E8E93),
-    accent = Color(0xFFFF9F0A),
-)
-val NightColors = ClockColors(
-    primary = Color(0xFF8B1A1A),
-    secondary = Color(0xFF4A0E0E),
-    accent = Color(0xFFA32020),
-)
+/** Hauteur relative de la barre musique sous le calendrier (le calendrier a une hauteur de 1). */
+const val MEDIA_BAR_WEIGHT = 0.28f
 
+/** Orbite anti-marquage : positions par tour, tours pour aller du centre au bord, rayons min et max (dp). */
+private const val ORBIT_POSITIONS_PER_TURN = 12
+private const val ORBIT_TURNS = 4
+private const val ORBIT_MIN_RADIUS_DP = 4f
+private const val ORBIT_MAX_RADIUS_DP = 20f
+
+/**
+ * L'écran de l'horloge, partagé par l'app plein écran et l'écran de veille : horloge (3 styles au balayage),
+ * calendrier du mois et musique en cours, jour ou nuit, avec les protections anti-marquage.
+ *
+ * @param onOpenSettings double toucher ; null dans l'écran de veille, qui a son propre bouton de réglages.
+ * @param clock heure utilisée (injectable pour les tests).
+ * @param nowPlayingSource musique en cours (injectable pour les tests).
+ */
 @Composable
 fun StandByScreen(
     prefs: ClockPrefs,
     forcedTheme: ThemeMode?,
-    onNightModeChanged: (Boolean) -> Unit,
+    onNightModeChange: (Boolean) -> Unit,
     onOpenSettings: (() -> Unit)?,
-    // Injectables pour les tests : heure fixe, musique simulée.
+    modifier: Modifier = Modifier,
     clock: Clock = Clock.systemDefaultZone(),
-    nowPlayingSource: @Composable (enabled: Boolean) -> NowPlaying? = { rememberNowPlaying(it).value },
+    nowPlayingSource: @Composable (enabled: Boolean) -> NowPlaying? = { rememberNowPlaying(it).value }
 ) {
     // La nuit, rien n'affiche les secondes : on ne se réveille qu'une fois par minute (économie d'énergie).
     var minuteTicks by remember { mutableStateOf(false) }
     val now by rememberTicker(everyMinute = minuteTicks, clock = clock)
     // Les réglages peuvent changer pendant que l'horloge est en arrière-plan : on les relit à chaque reprise.
-    var resumes by remember { mutableStateOf(0) }
-    LifecycleResumeEffect(Unit) {
-        resumes++
-        onPauseOrDispose { }
-    }
+    val resumes = rememberResumeCount()
     val themeMode = remember(forcedTheme, resumes) { forcedTheme ?: prefs.themeMode }
     var showCalendar by remember(resumes) { mutableStateOf(prefs.showCalendar) }
     val showMedia = remember(resumes) { prefs.showMedia }
@@ -91,34 +98,20 @@ fun StandByScreen(
     var manualNight by remember(scheduledNight, themeMode) { mutableStateOf<Boolean?>(null) }
     val night = manualNight ?: scheduledNight
     val currentNight by rememberUpdatedState(night)
+    val currentOnNightModeChange by rememberUpdatedState(onNightModeChange)
     LaunchedEffect(night) {
         minuteTicks = night
-        onNightModeChanged(night)
+        currentOnNightModeChange(night)
     }
     LaunchedEffect(showCalendar) { prefs.showCalendar = showCalendar }
 
-    val styles = ClockStyle.entries
-    val pager = rememberPagerState(initialPage = prefs.style.ordinal) { styles.size }
-    LaunchedEffect(resumes) {
-        if (prefs.style.ordinal != pager.currentPage) pager.scrollToPage(prefs.style.ordinal)
-    }
-    LaunchedEffect(pager) {
-        snapshotFlow { pager.currentPage }.collect { prefs.style = styles[it] }
-    }
-
-    // Anti-marquage OLED : tout le contenu suit une orbite lente (nouvelle position chaque minute)
-    // et l'horloge échange sa place avec le calendrier chaque heure.
-    val epochMinute = now.toEpochSecond() / 60
-    val shift = remember(epochMinute) { orbitOffset(epochMinute) }
-    val clockFirst = clockOnLeft(now.hour)
+    val pager = rememberStylePager(prefs, resumes)
 
     // Musique en lecture (ou en pause depuis peu) : barre sous le calendrier, ou tout le panneau s'il est masqué.
     val media = nowPlaying?.takeIf { it.isRecent(clock.millis()) }
-    val sidePane = media != null || showCalendar
-
-    val colors = if (night) NightColors else DayColors
+    val state = ScreenState(now, if (night) NightColors else DayColors, night, showCalendar, media)
     Box(
-        Modifier
+        modifier
             .fillMaxSize()
             .background(Color.Black)
             .testTag(TAG_SCREEN)
@@ -128,33 +121,92 @@ fun StandByScreen(
                 detectTapGestures(
                     onTap = { manualNight = !currentNight },
                     onLongPress = { showCalendar = !showCalendar },
-                    onDoubleTap = if (onOpenSettings != null) { _: Offset -> onOpenSettings() } else null,
+                    onDoubleTap = if (onOpenSettings != null) { _: Offset -> onOpenSettings() } else null
                 )
-            },
+            }
     ) {
         HorizontalPager(state = pager, modifier = Modifier.fillMaxSize()) { page ->
-            Row(
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 40.dp, vertical = 24.dp)
-                    .offset { IntOffset((shift.x * density).roundToInt(), (shift.y * density).roundToInt()) },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (sidePane && !clockFirst) SidePane(now, colors, media, night, showCalendar)
-                Box(Modifier.weight(1.4f).fillMaxHeight().testTag(clockTag(styles[page])), contentAlignment = Alignment.Center) {
-                    when (styles[page]) {
-                        ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
-                        ClockStyle.ANALOG -> AnalogClockWithDate(
-                            now, colors, showDate = !sidePane, showSeconds = !night,
-                            // Barre musique sous le calendrier : il ne prend plus que 1/1.28 de la hauteur.
-                            calendarHeight = if (media != null && showCalendar) 1f / 1.28f else 1f,
-                        )
-                        ClockStyle.MINIMAL -> MinimalClock(now, colors)
-                    }
-                }
-                if (sidePane && clockFirst) SidePane(now, colors, media, night, showCalendar)
-            }
+            ClockAndSidePane(ClockStyle.entries[page], state)
         }
+    }
+}
+
+/** Ce que l'écran affiche à un instant donné. */
+private class ScreenState(
+    val now: ZonedDateTime,
+    val colors: ClockColors,
+    val night: Boolean,
+    val showCalendar: Boolean,
+    val media: NowPlaying?
+) {
+    val hasSidePane get() = media != null || showCalendar
+}
+
+/** Nombre de reprises de l'écran (onResume) : sert de clé pour relire les réglages. */
+@Composable
+private fun rememberResumeCount(): Int {
+    var resumes by remember { mutableIntStateOf(0) }
+    LifecycleResumeEffect(Unit) {
+        resumes++
+        onPauseOrDispose { }
+    }
+    return resumes
+}
+
+/** Pager des styles d'horloge, synchronisé avec le style enregistré. */
+@Composable
+private fun rememberStylePager(prefs: ClockPrefs, resumes: Int): PagerState {
+    val styles = ClockStyle.entries
+    val pager = rememberPagerState(initialPage = prefs.style.ordinal) { styles.size }
+    LaunchedEffect(resumes) {
+        if (prefs.style.ordinal != pager.currentPage) pager.scrollToPage(prefs.style.ordinal)
+    }
+    LaunchedEffect(pager) {
+        snapshotFlow { pager.currentPage }.collect { prefs.style = styles[it] }
+    }
+    return pager
+}
+
+/**
+ * Une page du pager : l'horloge et son panneau. Anti-marquage : le tout suit une orbite lente
+ * (nouvelle position chaque minute) et l'horloge change de côté chaque heure.
+ */
+@Composable
+private fun ClockAndSidePane(style: ClockStyle, state: ScreenState) {
+    val epochMinute = state.now.toEpochSecond() / SECONDS_PER_MINUTE
+    val shift = remember(epochMinute) { orbitOffset(epochMinute) }
+    val clockFirst = clockOnLeft(state.now.hour)
+    Row(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 40.dp, vertical = 24.dp)
+            .offset { IntOffset((shift.x * density).roundToInt(), (shift.y * density).roundToInt()) },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (state.hasSidePane && !clockFirst) SidePane(state)
+        Box(Modifier.weight(CLOCK_PANE_WEIGHT).fillMaxHeight().testTag(clockTag(style)), contentAlignment = Alignment.Center) {
+            ClockFace(style, state)
+        }
+        if (state.hasSidePane && clockFirst) SidePane(state)
+    }
+}
+
+@Composable
+private fun ClockFace(style: ClockStyle, state: ScreenState) {
+    val (now, colors, night) = Triple(state.now, state.colors, state.night)
+    when (style) {
+        ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
+
+        ClockStyle.ANALOG -> AnalogClockWithDate(
+            now,
+            colors,
+            showDate = !state.hasSidePane,
+            showSeconds = !night,
+            // Barre musique sous le calendrier : il perd la hauteur de la barre.
+            calendarHeight = if (state.media != null && state.showCalendar) 1f / (1f + MEDIA_BAR_WEIGHT) else 1f
+        )
+
+        ClockStyle.MINIMAL -> MinimalClock(now, colors)
     }
 }
 
@@ -163,15 +215,18 @@ fun StandByScreen(
  * Calendrier masqué (appui long) : la musique a tout le panneau.
  */
 @Composable
-private fun RowScope.SidePane(now: ZonedDateTime, colors: ClockColors, media: NowPlaying?, night: Boolean, showCalendar: Boolean) {
+private fun RowScope.SidePane(state: ScreenState) {
+    val media = state.media
     Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
         when {
-            media == null -> MonthCalendar(now, colors)
-            !showCalendar -> Box(Modifier.testTag(TAG_MEDIA_CARD)) { MediaCard(media, colors, night) }
+            media == null -> MonthCalendar(state.now, state.colors)
+
+            !state.showCalendar -> MediaCard(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_CARD))
+
             else -> Column(Modifier.fillMaxSize()) {
-                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { MonthCalendar(now, colors) }
-                Box(Modifier.weight(0.28f).fillMaxWidth().testTag(TAG_MEDIA_BAR), contentAlignment = Alignment.Center) {
-                    MediaBar(media, colors, night)
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { MonthCalendar(state.now, state.colors) }
+                Box(Modifier.weight(MEDIA_BAR_WEIGHT).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    MediaBar(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_BAR))
                 }
             }
         }
@@ -182,22 +237,22 @@ private fun RowScope.SidePane(now: ZonedDateTime, colors: ClockColors, media: No
 fun clockOnLeft(hour: Int) = hour % 2 == 0
 
 /**
- * Position anti-marquage (en dp) à la minute [epochMinute] : 12 positions par tour, le rayon
- * va de 4 à 20 dp puis revient en 4 tours, pour ne jamais rester deux minutes au même endroit.
+ * Position anti-marquage (en dp) à la minute [epochMinute] : [ORBIT_POSITIONS_PER_TURN] positions par tour,
+ * le rayon va de [ORBIT_MIN_RADIUS_DP] à [ORBIT_MAX_RADIUS_DP] puis revient en [ORBIT_TURNS] tours,
+ * pour ne jamais rester deux minutes au même endroit.
  */
 internal fun orbitOffset(epochMinute: Long): Offset {
-    val perTurn = 12
-    val steps = perTurn * 4
+    val steps = ORBIT_POSITIONS_PER_TURN * ORBIT_TURNS
     val phase = (epochMinute % (2L * steps)).toInt()
     val progress = if (phase < steps) phase else 2 * steps - phase
-    val radius = 4f + 16f * progress / steps
-    val angle = 2 * PI * (epochMinute % perTurn) / perTurn
+    val radius = ORBIT_MIN_RADIUS_DP + (ORBIT_MAX_RADIUS_DP - ORBIT_MIN_RADIUS_DP) * progress / steps
+    val angle = 2 * PI * (epochMinute % ORBIT_POSITIONS_PER_TURN) / ORBIT_POSITIONS_PER_TURN
     return Offset((radius * cos(angle)).toFloat(), (radius * sin(angle)).toFloat())
 }
 
 /** Attente jusqu'au début de la prochaine seconde, ou de la prochaine minute si [everyMinute]. */
 fun tickDelayMillis(everyMinute: Boolean, nowMillis: Long): Long {
-    val period = if (everyMinute) 60_000L else 1000L
+    val period = if (everyMinute) MILLIS_PER_MINUTE else MILLIS_PER_SECOND
     return period - nowMillis % period
 }
 

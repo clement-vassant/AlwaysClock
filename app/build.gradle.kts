@@ -44,6 +44,8 @@ android {
 }
 
 ktlint {
+    // Même version que celle visée par les règles Compose (io.nlopez.compose.rules:ktlint).
+    version.set("1.8.0")
     android.set(true)
 }
 

@@ -57,7 +57,7 @@ class StandByDreamService :
             setViewTreeLifecycleOwner(this@StandByDreamService)
             setViewTreeSavedStateRegistryOwner(this@StandByDreamService)
             setViewTreeViewModelStoreOwner(this@StandByDreamService)
-            setContent { StandByScreen(prefs = prefs, forcedTheme = null, onNightModeChanged = {}, onOpenSettings = null) }
+            setContent { StandByScreen(prefs = prefs, forcedTheme = null, onNightModeChange = {}, onOpenSettings = null) }
         }
         setContentView(view)
         window.preferLowestRefreshRate()
@@ -71,7 +71,7 @@ class StandByDreamService :
         val minutes = ClockPrefs(this).autoOffMinutes
         if (minutes > 0) {
             autoOff = lifecycleScope.launch {
-                delay(minutes * 60_000L)
+                delay(minutes * MILLIS_PER_MINUTE)
                 finish()
             }
         }

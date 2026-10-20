@@ -58,7 +58,7 @@ class StandByScreenTest {
         StandByScreen(
             prefs = prefs,
             forcedTheme = null,
-            onNightModeChanged = {},
+            onNightModeChange = {},
             onOpenSettings = null,
             clock = clock,
             nowPlayingSource = { media }

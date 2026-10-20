@@ -51,9 +51,11 @@ class ClockPrefs(context: Context) {
 /** Nuit selon le mode ; en AUTO, la plage [start, end[ (minutes depuis minuit) peut passer minuit. */
 fun isNightAt(mode: ThemeMode, time: LocalTime, start: Int, end: Int): Boolean = when (mode) {
     ThemeMode.DAY -> false
+
     ThemeMode.NIGHT -> true
+
     ThemeMode.AUTO -> {
-        val t = time.hour * 60 + time.minute
+        val t = time.hour * MINUTES_PER_HOUR + time.minute
         if (start <= end) t in start until end else t >= start || t < end
     }
 }
@@ -74,4 +76,4 @@ fun themeFromExtra(value: String?): ThemeMode? = when (value) {
     else -> null
 }
 
-fun formatMinutes(minutes: Int) = "%02d:%02d".format(minutes / 60, minutes % 60)
+fun formatMinutes(minutes: Int) = "%02d:%02d".format(minutes / MINUTES_PER_HOUR, minutes % MINUTES_PER_HOUR)

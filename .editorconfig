@@ -19,3 +19,5 @@ ktlint_code_style = android_studio
 max_line_length = 140
 # Les fonctions @Composable commencent par une majuscule.
 ktlint_function_naming_ignore_when_annotated_with = Composable
+# Cette règle plante sur MediaCard.kt (compose-rules 0.6.8) : désactivée en attendant un correctif.
+ktlint_compose_modifier-clickable-order = disabled

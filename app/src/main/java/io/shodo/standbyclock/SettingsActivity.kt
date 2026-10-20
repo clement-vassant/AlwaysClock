@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import io.shodo.standbyclock.ui.DayColors
 
 /** Réglages : style, calendrier, jour/nuit, plage horaire de nuit et extinction automatique. Ouvert aussi par le ⚙ de l'écran de veille. */
 class SettingsActivity : ComponentActivity() {
@@ -42,7 +44,7 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val prefs = ClockPrefs(this)
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFFFF9F0A), background = Color.Black, surface = Color.Black)) {
+            MaterialTheme(colorScheme = darkColorScheme(primary = DayColors.accent, background = Color.Black, surface = Color.Black)) {
                 Surface(Modifier.fillMaxSize()) {
                     SettingsScreen(
                         prefs = prefs,
@@ -58,13 +60,15 @@ class SettingsActivity : ComponentActivity() {
     }
 
     private fun pickTime(initial: Int, onPicked: (Int) -> Unit) {
-        TimePickerDialog(this, { _, h, m -> onPicked(h * 60 + m) }, initial / 60, initial % 60, true).show()
+        TimePickerDialog(this, { _, h, m ->
+            onPicked(h * MINUTES_PER_HOUR + m)
+        }, initial / MINUTES_PER_HOUR, initial % MINUTES_PER_HOUR, true).show()
     }
 
     private fun openScreenSaverSettings() {
         try {
             startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))
-        } catch (e: ActivityNotFoundException) {
+        } catch (_: ActivityNotFoundException) {
             startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS))
         }
     }
@@ -88,8 +92,9 @@ private fun SettingsScreen(
     var media by remember { mutableStateOf(prefs.showMedia) }
     // Revérifié au retour des réglages Android.
     var mediaAccess by remember { mutableStateOf(false) }
+    val currentHasMediaAccess by rememberUpdatedState(hasMediaAccess)
     LifecycleResumeEffect(Unit) {
-        mediaAccess = hasMediaAccess()
+        mediaAccess = currentHasMediaAccess()
         onPauseOrDispose { }
     }
 

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew ktlintCheck detekt lintDebug
@@ -30,7 +30,7 @@ jobs:
         run: cat app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt || true
       - name: Rapports en cas d'échec
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lint-reports
           path: app/build/reports/
@@ -40,13 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew testDebugUnitTest
       - name: Rapports en cas d'échec
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-test-reports
           path: app/build/reports/tests/
@@ -58,9 +58,16 @@ jobs:
     env:
       API_LEVEL: 34
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
+      # L'émulateur a besoin d'environ 7,4 Go libres pour sa partition userdata ; certains runners n'en ont
+      # que 6,7 Go et l'émulateur s'arrête au démarrage (« Not enough space to create userdata partition »).
+      # On supprime des outils préinstallés inutiles ici (.NET, Haskell, CodeQL) pour garder une marge.
+      - name: Libérer de l'espace disque pour l'émulateur
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          df -h "$HOME"
       - name: Activer KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -97,21 +104,22 @@ jobs:
           script: ./gradlew connectedDebugAndroidTest
       - name: Rapports en cas d'échec
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: instrumented-test-reports
           path: app/build/reports/androidTests/
 
   build:
-    name: APK debug
+    name: APK debug et release
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jdx/mise-action@v2
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew assembleDebug
-      - uses: actions/upload-artifact@v4
+      # La variante release est celle publiée par release.yml : elle doit compiler sur chaque PR.
+      - run: ./gradlew assembleDebug assembleRelease
+      - uses: actions/upload-artifact@v7
         with:
           name: alwaysclock-debug
           path: app/build/outputs/apk/debug/*.apk

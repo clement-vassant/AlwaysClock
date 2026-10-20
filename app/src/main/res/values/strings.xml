@@ -3,5 +3,8 @@
     <string name="dream_label">StandBy Clock</string>
     <string name="day_clock">Horloge jour</string>
     <string name="night_clock">Horloge nuit</string>
-    <string name="settings">Réglages StandBy</string> <string name="media_listener">StandBy Clock : musique en cours</string>
+    <string name="settings">Réglages StandBy</string>
+    <string name="media_listener">StandBy Clock : musique en cours</string>
+    <string name="help_screen_saver">Pendant la charge : activez l\'écran de veille « StandBy Clock » avec « Pendant la charge ».</string>
+    <string name="help_routines">À heure fixe ou selon un mode : dans vos routines ou outils d\'automatisation (par exemple Modes et routines sur Samsung, ou Tasker), ajoutez l\'action « Ouvrir une app » et choisissez « Horloge jour », « Horloge nuit » ou « StandBy Clock » (mode Auto).</string>
 </resources>

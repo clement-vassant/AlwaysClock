@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
         window.preferLowestRefreshRate()
     }
 
-    // Fold plié ou déplié : on change d'écran, donc de modes d'affichage.
+    // Écran pliable plié ou déplié : on change d'écran, donc de modes d'affichage.
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         window.preferLowestRefreshRate()

@@ -1,6 +1,6 @@
 plugins {
+    // AGP 9 compile le Kotlin lui-même : le plugin org.jetbrains.kotlin.android ne s'applique plus ici.
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "io.shodo.standbyclock"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.shodo.standbyclock"
@@ -68,12 +68,12 @@ kotlin {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2025.06.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.1")

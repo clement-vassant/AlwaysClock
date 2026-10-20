@@ -2,7 +2,7 @@ name: Release
 
 # Publication d'une release GitHub à la demande, depuis Actions > Release > Run workflow :
 # calcule la prochaine version SemVer depuis le dernier tag vX.Y.Z et les messages Conventional Commits,
-# compile l'APK release signé, puis crée le tag, la release (notes générées par GitHub) et y attache l'APK.
+# compile l'APK release signé, puis crée le tag et la release GitHub (notes groupées par rubrique) avec l'APK.
 on:
   workflow_dispatch:
     inputs:
@@ -54,6 +54,7 @@ jobs:
             version="$(scripts/next-version.sh "${last_tag#v}" "$BUMP" <<<"$log")"
           fi
           echo "Dernière release : ${last_tag:-aucune}, nouvelle version : $version"
+          echo "LAST_TAG=$last_tag" >> "$GITHUB_ENV"
           echo "VERSION=$version" >> "$GITHUB_ENV"
           echo "TAG=v$version" >> "$GITHUB_ENV"
       - uses: jdx/mise-action@v2
@@ -82,6 +83,11 @@ jobs:
           apk_version="$("$aapt" dump badging app/build/outputs/apk/release/app-release.apk | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")"
           echo "versionName de l'APK : $apk_version"
           [ "$apk_version" = "$VERSION" ]
+      - name: Écrire les notes de version
+        run: |
+          range="${LAST_TAG:+$LAST_TAG..}HEAD"
+          git log "$range" --format=%s | scripts/release-notes.sh "$GITHUB_REPOSITORY" "$LAST_TAG" "$TAG" > "$RUNNER_TEMP/notes.md"
+          cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Créer la release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -89,4 +95,5 @@ jobs:
           apk="alwaysclock-$TAG.apk"
           cp app/build/outputs/apk/release/app-release.apk "$apk"
           sha256sum "$apk" > "$apk.sha256"
-          gh release create "$TAG" "$apk" "$apk.sha256" --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+          gh release create "$TAG" "$apk" "$apk.sha256" --target "$GITHUB_SHA" --title "AlwaysClock $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md"

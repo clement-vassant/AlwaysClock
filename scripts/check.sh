@@ -15,3 +15,4 @@ if [[ "${1:-}" == "--all" ]]; then
 fi
 gradle "${tasks[@]}"
 scripts/next-version-test.sh
+scripts/release-notes-test.sh

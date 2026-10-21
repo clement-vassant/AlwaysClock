@@ -37,6 +37,15 @@ class LayoutLogicTest {
     }
 
     @Test
+    fun `music goes under the clock while the calendar is shown, in the side pane otherwise`() {
+        assertEquals(MediaPlacement.UNDER_CLOCK, mediaPlacementFor(hasMedia = true, showCalendar = true))
+        // Calendrier masqué par l'appui long : la grande carte prend sa place.
+        assertEquals(MediaPlacement.SIDE_CARD, mediaPlacementFor(hasMedia = true, showCalendar = false))
+        assertEquals(MediaPlacement.NONE, mediaPlacementFor(hasMedia = false, showCalendar = true))
+        assertEquals(MediaPlacement.NONE, mediaPlacementFor(hasMedia = false, showCalendar = false))
+    }
+
+    @Test
     fun `clock side alternates every hour`() {
         assertTrue(clockOnLeft(0))
         assertFalse(clockOnLeft(1))

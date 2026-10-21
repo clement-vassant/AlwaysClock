@@ -52,13 +52,27 @@ internal fun ClockAndSidePane(style: ClockStyle, state: ScreenState) {
     }
 }
 
+/**
+ * L'horloge, avec la musique en cours en barre compacte dessous quand le calendrier est affiché.
+ * La barre suit l'horloge (orbite, changement de côté) et réduit un peu ses chiffres ou son cadran.
+ */
 @Composable
 private fun ClockPane(style: ClockStyle, state: ScreenState, portrait: Boolean, modifier: Modifier = Modifier) {
-    Box(modifier.testTag(clockTag(style)), contentAlignment = Alignment.Center) { ClockFace(style, state, portrait) }
+    val media = state.media?.takeIf { state.mediaPlacement == MediaPlacement.UNDER_CLOCK }
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(Modifier.weight(1f).fillMaxWidth().testTag(clockTag(style)), contentAlignment = Alignment.Center) {
+            ClockFace(style, state, portrait, barUnderClock = media != null)
+        }
+        if (media != null) {
+            Box(Modifier.weight(MEDIA_BAR_WEIGHT).fillMaxWidth(MEDIA_BAR_WIDTH_FRACTION), contentAlignment = Alignment.Center) {
+                MediaBar(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_BAR))
+            }
+        }
+    }
 }
 
 @Composable
-private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean) {
+private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean, barUnderClock: Boolean) {
     val (now, colors, night) = Triple(state.now, state.colors, state.night)
     when (style) {
         ClockStyle.DIGITAL -> DigitalClock(now, colors, showSeconds = !night)
@@ -69,8 +83,8 @@ private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean) 
             showDate = !state.hasSidePane,
             showSeconds = !night,
             matchCalendar = !portrait,
-            // Barre musique sous le calendrier : il perd la hauteur de la barre.
-            calendarHeight = if (state.media != null && state.showCalendar) 1f / (1f + MEDIA_BAR_WEIGHT) else 1f
+            // Barre musique sous l'horloge : le calendrier, lui, garde toute la hauteur du panneau.
+            calendarHeight = if (barUnderClock) 1f + MEDIA_BAR_WEIGHT else 1f
         )
 
         ClockStyle.MINIMAL -> MinimalClock(now, colors)
@@ -78,24 +92,30 @@ private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean) 
 }
 
 /**
- * Panneau à côté de l'horloge (ou dessous en portrait) : le calendrier, avec la musique en cours en barre
- * compacte dessous. Calendrier masqué (appui long) : la musique a tout le panneau.
+ * Panneau à côté de l'horloge (ou dessous en portrait) : le calendrier, ou, s'il est masqué (appui long),
+ * la grande carte musique.
  */
 @Composable
 private fun SidePane(state: ScreenState, modifier: Modifier = Modifier) {
-    val media = state.media
+    val media = state.media?.takeIf { state.mediaPlacement == MediaPlacement.SIDE_CARD }
     Box(modifier, contentAlignment = Alignment.Center) {
-        when {
-            media == null -> MonthCalendar(state.now, state.colors)
-
-            !state.showCalendar -> MediaCard(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_CARD))
-
-            else -> Column(Modifier.fillMaxSize()) {
-                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { MonthCalendar(state.now, state.colors) }
-                Box(Modifier.weight(MEDIA_BAR_WEIGHT).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    MediaBar(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_BAR))
-                }
-            }
+        if (media != null) {
+            MediaCard(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_CARD))
+        } else {
+            MonthCalendar(state.now, state.colors)
         }
     }
+}
+
+/** Où afficher la musique en cours. */
+enum class MediaPlacement { NONE, UNDER_CLOCK, SIDE_CARD }
+
+/**
+ * Calendrier affiché : barre compacte sous l'horloge, le panneau reste au calendrier.
+ * Calendrier masqué : grande carte dans le panneau, l'horloge garde toute sa taille.
+ */
+fun mediaPlacementFor(hasMedia: Boolean, showCalendar: Boolean): MediaPlacement = when {
+    !hasMedia -> MediaPlacement.NONE
+    showCalendar -> MediaPlacement.UNDER_CLOCK
+    else -> MediaPlacement.SIDE_CARD
 }

@@ -36,4 +36,5 @@ Les utiliser plutôt que tout faire dans la conversation principale :
 | `ci-doctor` | quand un job de la CI échoue : trouve la cause et propose le correctif minimal |
 | `designer` | dès qu'un changement touche l'interface, avant tout code : questions UI et UX une à la fois, 3 ou 4 maquettes dans un canevas Design, puis le plan |
 | `compose-ui` | pour une nouvelle vue ou un nouveau style d'horloge : Compose, anti-marquage, nuit |
+| `qa` | quand une PR change ce qui se voit ou le comportement, CI verte, avant le feu vert : scénarios sur l'émulateur du Mac (Remote Control), captures, rapport OK / KO sans corriger |
 | `releaser` | quand une release est demandée : lance le workflow Release sur `main`, suit l'exécution, rend la version et l'APK |

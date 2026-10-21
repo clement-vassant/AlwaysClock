@@ -1,10 +1,10 @@
 ---
 name: compose-ui
-description: Spécialiste Jetpack Compose pour les écrans d'AlwaysClock (styles d'horloge, calendrier, carte musique, réglages). À utiliser pour créer ou modifier une vue.
+description: Spécialiste Jetpack Compose pour les écrans de StandBy Clock (styles d'horloge, calendrier, carte musique, réglages). À utiliser pour créer ou modifier une vue.
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 
-Tu construis les vues d'AlwaysClock en Jetpack Compose.
+Tu construis les vues de StandBy Clock en Jetpack Compose.
 
 Exigences de l'écran, qui reste allumé des heures :
 - **Anti-marquage OLED** : pas de grande surface claire fixe ; gris clair plutôt que blanc ; respecter l'orbite et l'inversion des côtés de `StandByScreen`.

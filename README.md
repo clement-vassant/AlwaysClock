@@ -1,6 +1,6 @@
-# AlwaysClock
+# StandBy Clock
 
-[![CI](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml)
+[![CI](https://github.com/clement-vassant/StandByClock/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/clement-vassant/StandByClock/actions/workflows/ci.yml)
 
 **Le mode StandBy de l'iPhone sur Android : une grande horloge pendant que le téléphone charge, en paysage comme en portrait.**
 
@@ -16,7 +16,7 @@ Fonctionne sur tout téléphone ou tablette Android 10 ou plus récent. Appareil
 
 ## Pourquoi
 
-Sur Android, l'écran toujours allumé (Always On Display) est réservé au système et au fabricant : une app ne peut pas y dessiner. AlwaysClock passe donc par deux autres moyens :
+Sur Android, l'écran toujours allumé (Always On Display) est réservé au système et au fabricant : une app ne peut pas y dessiner. StandBy Clock passe donc par deux autres moyens :
 
 - **l'écran de veille Android**, qui se lance tout seul quand le téléphone charge ;
 - **une app plein écran**, à ouvrir soi-même : le téléphone passe en paysage et l'écran reste allumé.
@@ -51,7 +51,7 @@ Pas de publicité, pas de réseau. Seul l'accès aux notifications est demandé,
 
 ## Démarrage rapide
 
-Le plus simple : télécharger l'APK `alwaysclock-vX.Y.Z.apk` de la [dernière release](https://github.com/clement-vassant/AlwaysClock/releases/latest) et l'ouvrir sur le téléphone. La version en cours de développement est dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml) (dernière exécution réussie, artefact **alwaysclock-debug**). Pour compiler soi-même, avec le SDK Android installé :
+Le plus simple : télécharger l'APK `standbyclock-vX.Y.Z.apk` de la [dernière release](https://github.com/clement-vassant/StandByClock/releases/latest) et l'ouvrir sur le téléphone. La version en cours de développement est dans l'onglet [Actions](https://github.com/clement-vassant/StandByClock/actions/workflows/ci.yml) (dernière exécution réussie, artefact **standbyclock-debug**). Pour compiler soi-même, avec le SDK Android installé :
 
 1. **Java 17 avec [mise](https://mise.jdx.dev)** :
    ```bash
@@ -122,7 +122,7 @@ mise exec -- ./gradlew assembleDebug
 Dans un shell où mise est activé, `./gradlew assembleDebug` suffit.
 
 ### Sans rien installer (GitHub)
-À chaque push sur `main` et sur chaque pull request, le workflow `.github/workflows/ci.yml` compile l'APK et le met en téléchargement dans l'onglet [Actions](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml).
+À chaque push sur `main` et sur chaque pull request, le workflow `.github/workflows/ci.yml` compile l'APK et le met en téléchargement dans l'onglet [Actions](https://github.com/clement-vassant/StandByClock/actions/workflows/ci.yml).
 
 ## Installer sur le téléphone
 

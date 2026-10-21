@@ -43,7 +43,7 @@ Les PR sont mergées en squash et leur titre suit [Conventional Commits](https:/
    | sinon (`fix:`, `perf:`, `deps:`, `docs:`…) | correctif (0.1.0 → 0.1.1) |
 
 2. il compile l'APK release avec `versionName` = `X.Y.Z` et `versionCode` = `X*10000 + Y*100 + Z` ;
-3. il crée le tag et la release GitHub, y attache `alwaysclock-vX.Y.Z.apk` et son empreinte SHA-256, avec des notes groupées en « Nouveautés » (`feat`), « Corrections » (`fix`), « Performances », « Dépendances » (`deps`) et « Retours en arrière » (`revert`), chaque ligne liée à son commit. Un titre de PR clair donne donc une note de version claire.
+3. il crée le tag et la release GitHub, y attache `standbyclock-vX.Y.Z.apk` et son empreinte SHA-256, avec des notes groupées en « Nouveautés » (`feat`), « Corrections » (`fix`), « Performances », « Dépendances » (`deps`) et « Retours en arrière » (`revert`), chaque ligne liée à son commit. Un titre de PR clair donne donc une note de version claire.
 
 La case « Essai à blanc » fait tout (version, notes, APK release signé) sans créer de tag ni de release : les notes s'affichent dans le résumé du run et l'APK est dans ses artefacts. Elle fonctionne depuis n'importe quelle branche, pour tester une modification du workflow avant de la merger.
 
@@ -59,7 +59,7 @@ keytool -genkeypair -v -keystore alwaysclock-release.jks -alias alwaysclock \
 base64 -i alwaysclock-release.jks | pbcopy   # macOS ; sous Linux : base64 -w0 alwaysclock-release.jks
 ```
 
-Puis dans **Settings > Secrets and variables > Actions** du dépôt, créer `RELEASE_KEYSTORE_BASE64` (le contenu copié), `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS` (`alwaysclock`) et `RELEASE_KEY_PASSWORD`. Garder le fichier `.jks` et ses mots de passe en lieu sûr hors du dépôt : perdus, plus aucune mise à jour n'est possible.
+Puis dans **Settings > Secrets and variables > Actions** du dépôt, créer `RELEASE_KEYSTORE_BASE64` (le contenu copié), `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS` (`alwaysclock`, nom d’origine du projet : la clé existante garde cet alias, une clé ne se renomme pas sans casser les mises à jour) et `RELEASE_KEY_PASSWORD`. Garder le fichier `.jks` et ses mots de passe en lieu sûr hors du dépôt : perdus, plus aucune mise à jour n'est possible.
 
 ## Écrire du code lisible
 

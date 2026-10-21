@@ -52,12 +52,25 @@ import io.shodo.standbyclock.ui.calendarChoiceTag
  * Ouvert aussi par le ⚙ de l'écran de veille.
  */
 class SettingsActivity : ComponentActivity() {
-    // Au retour de la demande, l'écran revérifie l'accès (reprise de l'activité).
-    private val calendarPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        // Refusé deux fois : Android ne montre plus la demande, on ouvre la fiche de l'app pour l'autoriser.
-        if (!granted && !shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR)) {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+    // Au retour de la demande, l'écran revérifie l'accès (reprise de l'activité) : rien à faire ici.
+    private val calendarPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    /**
+     * Déjà demandé et Android ne propose plus d'explication : la demande a été refusée pour de bon et ne
+     * s'afficherait plus, on ouvre donc la fiche de l'app. On décide avant de demander : fermer la fenêtre
+     * sans répondre n'est pas un refus, et ne doit pas envoyer dans les réglages.
+     */
+    private fun requestCalendarAccess(prefs: ClockPrefs) {
+        if (prefs.calendarAccessAsked && !shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR)) {
+            try {
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+            } catch (_: ActivityNotFoundException) {
+                startActivity(Intent(Settings.ACTION_SETTINGS))
+            }
+            return
         }
+        prefs.calendarAccessAsked = true
+        calendarPermission.launch(Manifest.permission.READ_CALENDAR)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +88,7 @@ class SettingsActivity : ComponentActivity() {
                         onOpenNotificationAccess = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
                         calendarSource = CalendarSource(
                             hasAccess = { DeviceCalendar.hasAccess(this) },
-                            requestAccess = { calendarPermission.launch(Manifest.permission.READ_CALENDAR) },
+                            requestAccess = { requestCalendarAccess(prefs) },
                             calendars = { DeviceCalendar.calendars(this) }
                         )
                     )
@@ -281,13 +294,13 @@ private fun EventsSettings(prefs: ClockPrefs, source: CalendarSource) {
         !show -> Unit
 
         !access -> {
-            Text("Pour afficher vos événements, StandBy Clock a besoin de lire l'agenda.", style = MaterialTheme.typography.bodyMedium)
+            Text("Pour afficher les événements, StandBy Clock doit pouvoir lire l'agenda.", style = MaterialTheme.typography.bodyMedium)
             OutlinedButton(onClick = source.requestAccess) { Text("Autoriser l'accès à l'agenda") }
         }
 
         else -> Section("Agendas affichés") {
             Text(
-                "Coche les agendas à afficher. Un agenda ajouté plus tard sur l'appareil reste masqué tant qu'il n'est pas coché.",
+                "Cocher les agendas à afficher. Un agenda ajouté plus tard sur l'appareil reste masqué tant qu'il n'est pas coché.",
                 style = MaterialTheme.typography.bodySmall
             )
             if (calendars.isEmpty()) Text("Aucun agenda sur cet appareil.", style = MaterialTheme.typography.bodyMedium)

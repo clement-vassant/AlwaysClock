@@ -15,11 +15,13 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shodo.standbyclock.CalendarEvent
 import io.shodo.standbyclock.ClockPrefs
+import io.shodo.standbyclock.ClockStyle
 import io.shodo.standbyclock.ThemeMode
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -123,5 +125,16 @@ class TodayEventsScreenTest {
         show(evening)
         rule.onNodeWithText("+3 autres").assertIsDisplayed()
         rule.onNodeWithText("Rendez-vous 18").assertDoesNotExist()
+    }
+
+    // Semaine et liste à côté : le cadran ne se cale plus sur la hauteur du mois, il remplit son panneau.
+    @Test
+    fun analogDialFillsItsPaneNextToTheWeek() {
+        prefs.style = ClockStyle.ANALOG
+        show(listOf(sprintReview))
+        rule.onNodeWithTag(TAG_AGENDA).assertIsDisplayed()
+        val dial = rule.onNodeWithTag(TAG_DIAL).fetchSemanticsNode().size.height
+        val pane = rule.onNodeWithTag(clockTag(ClockStyle.ANALOG)).fetchSemanticsNode().size.height
+        assertTrue("cadran $dial trop petit pour son panneau $pane", dial * 10 >= pane * 8)
     }
 }

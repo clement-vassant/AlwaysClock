@@ -57,6 +57,11 @@ class ClockPrefs(context: Context) {
         get() = prefs.getStringSet("shown_calendars", emptySet()).orEmpty().mapNotNull { it.toLongOrNull() }.toSet()
         set(value) = prefs.edit { putStringSet("shown_calendars", value.map { it.toString() }.toSet()) }
 
+    /** La lecture de l'agenda a déjà été demandée : distingue un premier lancement d'un refus définitif. */
+    var calendarAccessAsked: Boolean
+        get() = prefs.getBoolean("calendar_access_asked", false)
+        set(value) = prefs.edit { putBoolean("calendar_access_asked", value) }
+
     var orientation: OrientationMode
         get() = OrientationMode.entries.getOrElse(prefs.getInt("orientation", 0)) { OrientationMode.AUTO }
         set(value) = prefs.edit { putInt("orientation", value.ordinal) }

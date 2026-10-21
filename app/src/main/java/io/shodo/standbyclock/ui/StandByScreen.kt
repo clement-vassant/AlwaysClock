@@ -111,7 +111,7 @@ fun StandByScreen(
     // Événements du jour : jamais la nuit (le mois seul, moins de pixels allumés), donc pas de lecture de l'agenda.
     val showEvents = remember(resumes) { prefs.showEvents }
     val shownCalendars = remember(resumes) { prefs.shownCalendars }
-    val events = key(resumes) { eventsSource(showEvents && !night && shownCalendars.isNotEmpty(), now.toLocalDate()) }
+    val events = eventsSource(showEvents && !night && shownCalendars.isNotEmpty(), now.toLocalDate())
     // Recalculé une fois par minute : un événement terminé disparaît, un autre passe en cours.
     val epochMinute = now.toEpochSecond() / SECONDS_PER_MINUTE
     val agenda = remember(events, shownCalendars, night, epochMinute) {

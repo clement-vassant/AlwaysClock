@@ -13,9 +13,14 @@ import android.provider.CalendarContract.Calendars
 import android.provider.CalendarContract.Instances
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +61,7 @@ object DeviceCalendar {
      * les événements « toute la journée » sont rangés en UTC, [todayAgenda] fait le tri exact.
      */
     fun eventsAround(context: Context, day: LocalDate, zone: ZoneId = ZoneId.systemDefault()): List<CalendarEvent> {
+        // Même vérification explicite que dans calendars() : Android Lint veut la voir ici.
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
             return emptyList()
         }
@@ -89,13 +95,20 @@ private fun Cursor.toEvent() = CalendarEvent(
 )
 
 /**
- * Les événements autour de [day], relus quand l'agenda change (synchronisation, ajout...).
- * Vide si [enabled] est faux ou sans autorisation de lire l'agenda.
+ * Les événements autour de [day], relus quand l'agenda change (synchronisation, ajout...) et à chaque reprise
+ * (l'autorisation a pu être accordée entre-temps). Vide si [enabled] est faux ou sans autorisation.
  */
 @Composable
 fun rememberCalendarEvents(enabled: Boolean, day: LocalDate): State<List<CalendarEvent>> {
     val context = LocalContext.current
-    return produceState(initialValue = emptyList(), enabled, day) {
+    var resumes by remember { mutableIntStateOf(0) }
+    LifecycleResumeEffect(Unit) {
+        resumes++
+        onPauseOrDispose { }
+    }
+    // produceState garde sa valeur quand ses clés changent : à la reprise, la liste précédente reste affichée
+    // jusqu'à la relecture, sans repasser une image par le mois.
+    return produceState(initialValue = emptyList(), enabled, day, resumes) {
         if (!enabled || !DeviceCalendar.hasAccess(context)) {
             value = emptyList()
             return@produceState

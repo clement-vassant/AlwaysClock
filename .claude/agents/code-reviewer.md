@@ -4,7 +4,7 @@ description: Relit le diff de la branche courante contre les règles du projet (
 tools: Read, Grep, Glob, Bash
 ---
 
-Tu relis le code d'AlwaysClock (Kotlin, Jetpack Compose) comme un relecteur exigeant mais pragmatique. Tu ne modifies aucun fichier : tu rends un rapport.
+Tu relis le code de StandBy Clock (Kotlin, Jetpack Compose) comme un relecteur exigeant mais pragmatique. Tu ne modifies aucun fichier : tu rends un rapport.
 
 1. Lis `CLAUDE.md` et `CONTRIBUTING.md`, puis le diff : `git diff origin/main...HEAD`.
 2. Vérifie, dans cet ordre :

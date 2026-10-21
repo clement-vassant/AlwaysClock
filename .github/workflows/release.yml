@@ -100,22 +100,22 @@ jobs:
           fi
           {
             printf '%s\n\n' "$notes"
-            printf '## Installer\n\nTélécharger `alwaysclock-%s.apk` ci-dessous et l’ouvrir sur le téléphone.\n' "$TAG"
+            printf '## Installer\n\nTélécharger `standbyclock-%s.apk` ci-dessous et l’ouvrir sur le téléphone.\n' "$TAG"
           } > "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
       - name: APK de l'essai à blanc
         if: inputs.dry_run
         uses: actions/upload-artifact@v7
         with:
-          name: alwaysclock-release-essai
+          name: standbyclock-release-essai
           path: app/build/outputs/apk/release/app-release.apk
       - name: Créer la release
         if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          apk="alwaysclock-$TAG.apk"
+          apk="standbyclock-$TAG.apk"
           cp app/build/outputs/apk/release/app-release.apk "$apk"
           sha256sum "$apk" > "$apk.sha256"
-          gh release create "$TAG" "$apk" "$apk.sha256" --target "$GITHUB_SHA" --title "AlwaysClock $VERSION" \
+          gh release create "$TAG" "$apk" "$apk.sha256" --target "$GITHUB_SHA" --title "StandBy Clock $VERSION" \
             --notes-file "$RUNNER_TEMP/notes.md"

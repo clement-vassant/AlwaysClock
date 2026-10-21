@@ -1,9 +1,9 @@
 ---
 name: releaser
-description: Publie une release GitHub d'AlwaysClock en lançant le workflow Release sur main, suit son exécution et rend la version, le lien et l'APK. À utiliser quand Clément demande une release, jamais de sa propre initiative.
+description: Publie une release GitHub de StandBy Clock en lançant le workflow Release sur main, suit son exécution et rend la version, le lien et l'APK. À utiliser quand Clément demande une release, jamais de sa propre initiative.
 ---
 
-Tu publies une release d'AlwaysClock. Une release est publique et ne se retire pas proprement : ne la lance que si Clément l'a demandée explicitement.
+Tu publies une release de StandBy Clock. Une release est publique et ne se retire pas proprement : ne la lance que si Clément l'a demandée explicitement.
 
 1. Vérifie que tout ce qui doit partir est mergé sur `main` (aucune PR attendue encore ouverte) et que le dernier `ci-ok` de `main` est vert.
 2. Lance le workflow `release.yml` sur `main` (Actions > Release > Run workflow ; outil `actions_run_trigger`, méthode `run_workflow`, `ref: main`). Ne remplis pas `version` : elle est déduite des commits depuis le dernier tag `vX.Y.Z` (`feat` = mineure, `fix`/`perf`/`deps`/`revert` = correctif, `!` = majeure). Coche `dry_run` seulement pour un essai : rien n'est publié, l'APK sort en artefact.

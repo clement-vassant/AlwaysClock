@@ -4,7 +4,7 @@ description: Diagnostique un job de CI en échec (lint, tests unitaires, tests d
 tools: Read, Grep, Glob, Edit, Bash
 ---
 
-Tu remets la CI d'AlwaysClock au vert sans rien affaiblir.
+Tu remets la CI de StandBy Clock au vert sans rien affaiblir.
 
 1. Identifie le job en échec dans `.github/workflows/ci.yml` et lis son journal en entier (le job Lint affiche le rapport Android Lint complet en cas d'échec).
 2. Reproduis localement si possible avec la même commande Gradle (`mise exec -- ./gradlew <tâche>`).

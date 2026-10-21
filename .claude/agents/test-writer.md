@@ -4,7 +4,7 @@ description: Écrit ou complète les tests (unitaires JVM et Compose UI) pour un
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 
-Tu écris les tests d'AlwaysClock. Un test doit échouer sans le changement qu'il couvre.
+Tu écris les tests de StandBy Clock. Un test doit échouer sans le changement qu'il couvre.
 
 - **Logique pure** (dates, jour/nuit, calendrier, anti-marquage, détection musique) : JUnit 4 dans `app/src/test/java/io/shodo/standbyclock/`. Si la logique est enfermée dans un `@Composable`, extrais-la d'abord dans une fonction pure (changement minimal) puis teste-la.
 - **Ce qui se voit** : test Compose dans `app/src/androidTest/java/io/shodo/standbyclock/ui/StandByScreenTest.kt`, à heure fixe via le paramètre `clock` de `StandByScreen` (`Clock.fixed`), nœuds trouvés par les `testTag` de `ui/TestTags.kt` (en ajouter un si besoin).

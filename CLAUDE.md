@@ -35,3 +35,4 @@ Les utiliser plutôt que tout faire dans la conversation principale :
 | `test-writer` | dès qu'un comportement change : écrit ou complète les tests unitaires et Compose |
 | `ci-doctor` | quand un job de la CI échoue : trouve la cause et propose le correctif minimal |
 | `compose-ui` | pour une nouvelle vue ou un nouveau style d'horloge : Compose, anti-marquage, nuit |
+| `releaser` | quand une release est demandée : lance le workflow Release sur `main`, suit l'exécution, rend la version et l'APK |

@@ -61,12 +61,11 @@ data class AgendaLines(val shown: List<CalendarEvent>, val more: Int) {
     val count get() = shown.size + if (more > 0) 1 else 0
 }
 
-fun agendaLines(agenda: List<CalendarEvent>, maxLines: Int = MAX_AGENDA_LINES): AgendaLines =
-    if (agenda.size <= maxLines) {
-        AgendaLines(agenda, 0)
-    } else {
-        AgendaLines(agenda.take(maxLines - 1), agenda.size - (maxLines - 1))
-    }
+fun agendaLines(agenda: List<CalendarEvent>, maxLines: Int = MAX_AGENDA_LINES): AgendaLines = if (agenda.size <= maxLines) {
+    AgendaLines(agenda, 0)
+} else {
+    AgendaLines(agenda.take(maxLines - 1), agenda.size - (maxLines - 1))
+}
 
 /**
  * Heure affichée devant le titre : « Journée », l'heure de fin d'un événement en cours (« → 15:00 »,
@@ -84,8 +83,7 @@ fun agendaTime(event: CalendarEvent, now: ZonedDateTime): String {
 }
 
 /** Événement en cours (ou de toute la journée) : son heure est en accent. */
-fun isHappeningNow(event: CalendarEvent, now: ZonedDateTime): Boolean =
-    event.allDay || event.begin <= now.toInstant().toEpochMilli()
+fun isHappeningNow(event: CalendarEvent, now: ZonedDateTime): Boolean = event.allDay || event.begin <= now.toInstant().toEpochMilli()
 
 /** Dernière ligne quand tout ne tient pas : « +1 autre », « +3 autres ». */
 fun moreEventsLabel(count: Int): String = "+$count autre${if (count > 1) "s" else ""}"

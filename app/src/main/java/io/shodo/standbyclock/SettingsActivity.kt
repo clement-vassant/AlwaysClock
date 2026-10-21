@@ -256,11 +256,7 @@ internal fun SettingsScreen(
 }
 
 /** Accès à l'agenda de l'appareil, fourni par l'activité (remplacé dans les tests). */
-internal class CalendarSource(
-    val hasAccess: () -> Boolean,
-    val requestAccess: () -> Unit,
-    val calendars: () -> List<CalendarInfo>
-)
+internal class CalendarSource(val hasAccess: () -> Boolean, val requestAccess: () -> Unit, val calendars: () -> List<CalendarInfo>)
 
 /** Événements du jour : interrupteur, autorisation de lire l'agenda, puis choix des agendas affichés. */
 @Composable
@@ -277,44 +273,47 @@ private fun EventsSettings(prefs: ClockPrefs, source: CalendarSource) {
         onPauseOrDispose { }
     }
 
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text("Afficher les événements du jour")
-            Text(
-                "Le jour, ceux qui ne sont pas encore terminés, à côté de l'horloge. La nuit, le calendrier du mois seul.",
-                style = MaterialTheme.typography.bodySmall
-            )
+    // Un seul bloc émis : interrupteur, puis autorisation ou choix des agendas.
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Afficher les événements du jour")
+                Text(
+                    "Le jour, ceux qui ne sont pas encore terminés, à côté de l'horloge. La nuit, le calendrier du mois seul.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Switch(checked = show, modifier = Modifier.testTag(TAG_EVENTS_SWITCH), onCheckedChange = {
+                show = it
+                prefs.showEvents = it
+            })
         }
-        Switch(checked = show, modifier = Modifier.testTag(TAG_EVENTS_SWITCH), onCheckedChange = {
-            show = it
-            prefs.showEvents = it
-        })
-    }
-    when {
-        !show -> Unit
+        when {
+            !show -> Unit
 
-        !access -> {
-            Text("Pour afficher les événements, StandBy Clock doit pouvoir lire l'agenda.", style = MaterialTheme.typography.bodyMedium)
-            OutlinedButton(onClick = source.requestAccess) { Text("Autoriser l'accès à l'agenda") }
-        }
+            !access -> {
+                Text("Pour afficher les événements, StandBy Clock doit pouvoir lire l'agenda.", style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(onClick = source.requestAccess) { Text("Autoriser l'accès à l'agenda") }
+            }
 
-        else -> Section("Agendas affichés") {
-            Text(
-                "Cocher les agendas à afficher. Un agenda ajouté plus tard sur l'appareil reste masqué tant qu'il n'est pas coché.",
-                style = MaterialTheme.typography.bodySmall
-            )
-            if (calendars.isEmpty()) Text("Aucun agenda sur cet appareil.", style = MaterialTheme.typography.bodyMedium)
-            for (calendar in calendars) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = calendar.id in shown,
-                        modifier = Modifier.testTag(calendarChoiceTag(calendar.id)),
-                        onCheckedChange = { checked ->
-                            shown = if (checked) shown + calendar.id else shown - calendar.id
-                            prefs.shownCalendars = shown
-                        }
-                    )
-                    Text(calendar.label())
+            else -> Section("Agendas affichés") {
+                Text(
+                    "Cocher les agendas à afficher. Un agenda ajouté plus tard sur l'appareil reste masqué tant qu'il n'est pas coché.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                if (calendars.isEmpty()) Text("Aucun agenda sur cet appareil.", style = MaterialTheme.typography.bodyMedium)
+                for (calendar in calendars) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = calendar.id in shown,
+                            modifier = Modifier.testTag(calendarChoiceTag(calendar.id)),
+                            onCheckedChange = { checked ->
+                                shown = if (checked) shown + calendar.id else shown - calendar.id
+                                prefs.shownCalendars = shown
+                            }
+                        )
+                        Text(calendar.label())
+                    }
                 }
             }
         }

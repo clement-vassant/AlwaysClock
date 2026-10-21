@@ -89,7 +89,7 @@ Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil
 
 ## Écrans pliables
 
-Sur un téléphone pliable, l'horloge s'affiche sur l'écran actif : l'écran extérieur quand il est plié (posé sur un dock, par exemple), le grand écran quand il est ouvert. Les captures ci-dessus viennent de l'écran extérieur d'un Galaxy Z Fold. Tenu ouvert en portrait, l'horloge et le calendrier s'affichent l'un au-dessus de l'autre.
+Sur un téléphone pliable, l'horloge s'affiche sur l'écran actif : l'écran extérieur quand il est plié (posé sur un dock, par exemple), le grand écran quand il est ouvert. Les captures ci-dessus viennent de l'écran extérieur d'un Galaxy Z Fold. Tenu ouvert en portrait, l'écran de veille affiche l'horloge et le calendrier l'un au-dessus de l'autre ; l'app plein écran, elle, reste dans une bande paysage (Android 16 n'y fait pas tourner l'écran).
 
 ## Protection de l'écran
 

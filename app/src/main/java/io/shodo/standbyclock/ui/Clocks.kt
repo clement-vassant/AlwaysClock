@@ -78,7 +78,8 @@ fun DigitalClock(now: ZonedDateTime, colors: ClockColors, showSeconds: Boolean, 
 /**
  * Style 2 : cadran analogique, avec la date en grand à droite si le calendrier est masqué.
  *
- * @param calendarWidth largeur du calendrier, en fraction de celle de l'horloge (moins large à côté, aussi large dessous).
+ * @param matchCalendar calendrier à côté : le cadran prend sa hauteur. Faux en portrait, où le calendrier
+ * est dessous : le cadran remplit alors son panneau.
  * @param calendarHeight hauteur du calendrier, en fraction de celle de l'horloge.
  */
 @Composable
@@ -88,7 +89,7 @@ fun AnalogClockWithDate(
     showDate: Boolean,
     showSeconds: Boolean,
     modifier: Modifier = Modifier,
-    calendarWidth: Float = 1f / CLOCK_PANE_WEIGHT,
+    matchCalendar: Boolean = true,
     calendarHeight: Float = 1f
 ) {
     Row(
@@ -99,12 +100,13 @@ fun AnalogClockWithDate(
         if (showDate) {
             AnalogDial(now, colors, showSeconds, Modifier.fillMaxHeight(0.8f).aspectRatio(1f))
         } else {
-            // Calendrier à côté ou dessous : le cadran ne dépasse pas sa hauteur (mêmes calculs que MonthCalendar,
-            // sur la taille de son panneau) : jours de la semaine + semaines du mois.
+            // Calendrier à côté : le cadran ne dépasse pas sa hauteur (mêmes calculs que MonthCalendar,
+            // dont la colonne fait 1/1.4 de celle de l'horloge) : jours de la semaine + semaines du mois.
             BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                val cell = min(maxWidth * calendarWidth / DAYS_PER_WEEK, maxHeight * calendarHeight / CALENDAR_ROWS)
+                val cell = min(maxWidth / CLOCK_PANE_WEIGHT / DAYS_PER_WEEK, maxHeight * calendarHeight / CALENDAR_ROWS)
                 val rows = 0.8f + monthGrid(now.toLocalDate()).weeks
-                AnalogDial(now, colors, showSeconds, Modifier.size(min(cell * rows, min(maxWidth, maxHeight) * 0.9f)))
+                val paneSize = min(maxWidth, maxHeight) * 0.9f
+                AnalogDial(now, colors, showSeconds, Modifier.size(if (matchCalendar) min(cell * rows, paneSize) else paneSize))
             }
         }
         if (showDate) {

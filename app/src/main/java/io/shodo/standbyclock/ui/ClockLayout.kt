@@ -34,7 +34,7 @@ internal fun ClockAndSidePane(style: ClockStyle, state: ScreenState) {
         val portrait = isPortrait(constraints.maxWidth, constraints.maxHeight)
         val orbit = Modifier
             .fillMaxSize()
-            .padding(horizontal = if (portrait) 24.dp else 40.dp, vertical = if (portrait) 40.dp else 24.dp)
+            .padding(horizontal = 40.dp, vertical = if (portrait) 40.dp else 24.dp)
             .offset { IntOffset((shift.x * density).roundToInt(), (shift.y * density).roundToInt()) }
         if (portrait) {
             Column(orbit, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -68,8 +68,9 @@ private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean) 
             colors,
             showDate = !state.hasSidePane,
             showSeconds = !night,
-            calendarWidth = sidePaneWidth(portrait),
-            calendarHeight = sidePaneHeight(portrait, withMediaBar = state.media != null && state.showCalendar)
+            matchCalendar = !portrait,
+            // Barre musique sous le calendrier : il perd la hauteur de la barre.
+            calendarHeight = if (state.media != null && state.showCalendar) 1f / (1f + MEDIA_BAR_WEIGHT) else 1f
         )
 
         ClockStyle.MINIMAL -> MinimalClock(now, colors)
@@ -97,13 +98,4 @@ private fun SidePane(state: ScreenState, modifier: Modifier = Modifier) {
             }
         }
     }
-}
-
-/** Largeur du calendrier en fraction de celle de l'horloge : moins large à côté, aussi large dessous. */
-internal fun sidePaneWidth(portrait: Boolean) = if (portrait) 1f else 1f / CLOCK_PANE_WEIGHT
-
-/** Hauteur du calendrier en fraction de celle de l'horloge ; la barre musique sous le calendrier lui prend sa hauteur. */
-internal fun sidePaneHeight(portrait: Boolean, withMediaBar: Boolean): Float {
-    val pane = if (portrait) 1f / CLOCK_PANE_WEIGHT else 1f
-    return if (withMediaBar) pane / (1f + MEDIA_BAR_WEIGHT) else pane
 }

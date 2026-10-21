@@ -58,12 +58,13 @@ class StandByScreenTest {
         prefs = ClockPrefs(context)
     }
 
-    private fun show(media: NowPlaying? = null) = rule.setContent {
+    private fun show(media: NowPlaying? = null, modifier: Modifier = Modifier) = rule.setContent {
         StandByScreen(
             prefs = prefs,
             forcedTheme = null,
             onNightModeChange = {},
             onOpenSettings = null,
+            modifier = modifier,
             clock = clock,
             nowPlayingSource = { media }
         )
@@ -113,9 +114,9 @@ class StandByScreenTest {
         assertTrue("horloge attendue au-dessus du calendrier", clockBounds.bottom <= calendarBounds.top)
     }
 
-    // Portrait avec musique : le cadran analogique ne dépasse pas la hauteur du calendrier.
+    // Portrait : calendrier dessous, le cadran analogique remplit son panneau au lieu de suivre la hauteur du calendrier.
     @Test
-    fun portraitAnalogDialIsNotTallerThanCalendarWithMusic() {
+    fun portraitAnalogDialFillsItsPane() {
         prefs.style = ClockStyle.ANALOG
         rule.setContent {
             Box(Modifier.size(width = 300.dp, height = 600.dp)) {
@@ -129,7 +130,9 @@ class StandByScreenTest {
                 )
             }
         }
-        assertDialFitsCalendar()
+        val dial = rule.onNodeWithTag(TAG_DIAL).fetchSemanticsNode().size
+        val screen = rule.onNodeWithTag(TAG_SCREEN).fetchSemanticsNode().size
+        assertTrue("cadran $dial trop petit pour l'écran $screen", dial.width * 10 >= screen.width * 6)
     }
 
     @Test
@@ -150,22 +153,22 @@ class StandByScreenTest {
     @Test
     fun analogDialIsNotTallerThanCalendar() {
         prefs.style = ClockStyle.ANALOG
-        show()
+        show(modifier = Modifier.forceLandscape())
         assertDialFitsCalendar()
     }
 
     @Test
     fun analogDialIsNotTallerThanCalendarWithMusic() {
         prefs.style = ClockStyle.ANALOG
-        show(media = music)
+        show(media = music, modifier = Modifier.forceLandscape())
         assertDialFitsCalendar()
     }
 
+    // Calendrier à côté (paysage, forcé : l'émulateur est en portrait) : le cadran ne dépasse pas sa hauteur.
+    // Tailles de mise en page, avant la rotation du paysage forcé.
     private fun assertDialFitsCalendar() {
-        val dial = rule.onNodeWithTag(TAG_DIAL).getBoundsInRoot()
-        val calendar = rule.onNodeWithTag(TAG_CALENDAR).getBoundsInRoot()
-        val dialHeight = dial.bottom - dial.top
-        val calendarHeight = calendar.bottom - calendar.top
+        val dialHeight = rule.onNodeWithTag(TAG_DIAL).fetchSemanticsNode().size.height
+        val calendarHeight = rule.onNodeWithTag(TAG_CALENDAR).fetchSemanticsNode().size.height
         assertTrue("cadran $dialHeight > calendrier $calendarHeight", dialHeight <= calendarHeight)
     }
 

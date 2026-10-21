@@ -11,6 +11,8 @@ Fonctionne sur tout téléphone ou tablette Android 10 ou plus récent. Appareil
 | ![Horloge digitale en mode nuit sur un téléphone](screenshots/fold-01.png) | ![Horloge analogique et calendrier sur un téléphone](screenshots/fold-analog.png) |
 | **Grand écran, Digital** | **Grand écran, Minimal en mode nuit** |
 | ![Horloge digitale et calendrier sur le grand écran](screenshots/01-digital.png) | ![Horloge minimale en mode nuit sur le grand écran](screenshots/04-minimal-nuit.png) |
+| **Portrait, Digital** | **Portrait, analogique** |
+| ![Écran de veille en portrait : horloge digitale en haut, calendrier dessous](screenshots/portrait-digital.png) | ![Écran de veille en portrait : cadran analogique en haut, calendrier dessous](screenshots/portrait-analog.png) |
 
 ## Pourquoi
 

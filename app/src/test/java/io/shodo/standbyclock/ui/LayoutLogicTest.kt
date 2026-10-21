@@ -29,6 +29,14 @@ class LayoutLogicTest {
     }
 
     @Test
+    fun `only a screen taller than wide is portrait`() {
+        assertTrue(isPortrait(width = 1080, height = 2520))
+        assertFalse(isPortrait(width = 2520, height = 1080))
+        // Écran carré : on garde la disposition côte à côte.
+        assertFalse(isPortrait(width = 1000, height = 1000))
+    }
+
+    @Test
     fun `clock side alternates every hour`() {
         assertTrue(clockOnLeft(0))
         assertFalse(clockOnLeft(1))

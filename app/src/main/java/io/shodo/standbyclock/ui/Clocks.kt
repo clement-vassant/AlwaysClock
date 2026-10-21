@@ -75,7 +75,13 @@ fun DigitalClock(now: ZonedDateTime, colors: ClockColors, showSeconds: Boolean, 
     }
 }
 
-/** Style 2 : cadran analogique, avec la date en grand à droite si le calendrier est masqué. */
+/**
+ * Style 2 : cadran analogique, avec la date en grand à droite si le calendrier est masqué.
+ *
+ * @param matchCalendar calendrier à côté : le cadran prend sa hauteur. Faux en portrait, où le calendrier
+ * est dessous : le cadran remplit alors son panneau.
+ * @param calendarHeight hauteur du calendrier, en fraction de celle de l'horloge.
+ */
 @Composable
 fun AnalogClockWithDate(
     now: ZonedDateTime,
@@ -83,6 +89,7 @@ fun AnalogClockWithDate(
     showDate: Boolean,
     showSeconds: Boolean,
     modifier: Modifier = Modifier,
+    matchCalendar: Boolean = true,
     calendarHeight: Float = 1f
 ) {
     Row(
@@ -98,7 +105,8 @@ fun AnalogClockWithDate(
             BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 val cell = min(maxWidth / CLOCK_PANE_WEIGHT / DAYS_PER_WEEK, maxHeight * calendarHeight / CALENDAR_ROWS)
                 val rows = 0.8f + monthGrid(now.toLocalDate()).weeks
-                AnalogDial(now, colors, showSeconds, Modifier.size(min(cell * rows, min(maxWidth, maxHeight) * 0.9f)))
+                val paneSize = min(maxWidth, maxHeight) * 0.9f
+                AnalogDial(now, colors, showSeconds, Modifier.size(if (matchCalendar) min(cell * rows, paneSize) else paneSize))
             }
         }
         if (showDate) {

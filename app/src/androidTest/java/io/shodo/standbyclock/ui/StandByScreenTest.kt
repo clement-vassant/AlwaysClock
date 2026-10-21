@@ -1,6 +1,9 @@
 package io.shodo.standbyclock.ui
 
 import android.content.Context
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -12,6 +15,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shodo.standbyclock.ClockPrefs
@@ -54,12 +58,13 @@ class StandByScreenTest {
         prefs = ClockPrefs(context)
     }
 
-    private fun show(media: NowPlaying? = null) = rule.setContent {
+    private fun show(media: NowPlaying? = null, modifier: Modifier = Modifier) = rule.setContent {
         StandByScreen(
             prefs = prefs,
             forcedTheme = null,
             onNightModeChange = {},
             onOpenSettings = null,
+            modifier = modifier,
             clock = clock,
             nowPlayingSource = { media }
         )
@@ -67,6 +72,68 @@ class StandByScreenTest {
 
     private fun screenIs(state: String) =
         rule.onNodeWithTag(TAG_SCREEN).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, state))
+
+    // Écran de veille sur un écran en portrait : l'horloge est mise en page en paysage puis tournée.
+    @Test
+    fun portraitScreenSaverIsLaidOutInLandscape() {
+        rule.setContent {
+            Box(Modifier.size(width = 300.dp, height = 600.dp)) {
+                StandByScreen(
+                    prefs = prefs,
+                    forcedTheme = null,
+                    onNightModeChange = {},
+                    onOpenSettings = null,
+                    modifier = Modifier.forceLandscape(),
+                    clock = clock,
+                    nowPlayingSource = { null }
+                )
+            }
+        }
+        val size = rule.onNodeWithTag(TAG_SCREEN).fetchSemanticsNode().size
+        assertTrue("mise en page attendue en paysage : $size", size.width > size.height)
+        rule.onNodeWithTag(TAG_CALENDAR).assertIsDisplayed()
+    }
+
+    // Orientation automatique sur un écran en portrait : à 14 h (heure paire), l'horloge est au-dessus du calendrier.
+    @Test
+    fun portraitScreenStacksClockAboveCalendar() {
+        rule.setContent {
+            Box(Modifier.size(width = 300.dp, height = 600.dp)) {
+                StandByScreen(
+                    prefs = prefs,
+                    forcedTheme = null,
+                    onNightModeChange = {},
+                    onOpenSettings = null,
+                    clock = clock,
+                    nowPlayingSource = { null }
+                )
+            }
+        }
+        val clockBounds = rule.onNodeWithTag(clockTag(ClockStyle.DIGITAL)).getBoundsInRoot()
+        val calendarBounds = rule.onNodeWithTag(TAG_CALENDAR).getBoundsInRoot()
+        assertTrue("horloge attendue au-dessus du calendrier", clockBounds.bottom <= calendarBounds.top)
+    }
+
+    // Portrait : calendrier dessous, le cadran analogique remplit son panneau au lieu de suivre la hauteur du calendrier.
+    @Test
+    fun portraitAnalogDialFillsItsPane() {
+        prefs.style = ClockStyle.ANALOG
+        rule.setContent {
+            Box(Modifier.size(width = 300.dp, height = 600.dp)) {
+                StandByScreen(
+                    prefs = prefs,
+                    forcedTheme = null,
+                    onNightModeChange = {},
+                    onOpenSettings = null,
+                    clock = clock,
+                    nowPlayingSource = { music }
+                )
+            }
+        }
+        val dial = rule.onNodeWithTag(TAG_DIAL).fetchSemanticsNode().size
+        val screen = rule.onNodeWithTag(TAG_SCREEN).fetchSemanticsNode().size
+        assertTrue("cadran $dial trop petit pour l'écran $screen", dial.width * 10 >= screen.width * 6)
+    }
 
     @Test
     fun calendarIsShownByDefault() {
@@ -86,22 +153,22 @@ class StandByScreenTest {
     @Test
     fun analogDialIsNotTallerThanCalendar() {
         prefs.style = ClockStyle.ANALOG
-        show()
+        show(modifier = Modifier.forceLandscape())
         assertDialFitsCalendar()
     }
 
     @Test
     fun analogDialIsNotTallerThanCalendarWithMusic() {
         prefs.style = ClockStyle.ANALOG
-        show(media = music)
+        show(media = music, modifier = Modifier.forceLandscape())
         assertDialFitsCalendar()
     }
 
+    // Calendrier à côté (paysage, forcé : l'émulateur est en portrait) : le cadran ne dépasse pas sa hauteur.
+    // Tailles de mise en page, avant la rotation du paysage forcé.
     private fun assertDialFitsCalendar() {
-        val dial = rule.onNodeWithTag(TAG_DIAL).getBoundsInRoot()
-        val calendar = rule.onNodeWithTag(TAG_CALENDAR).getBoundsInRoot()
-        val dialHeight = dial.bottom - dial.top
-        val calendarHeight = calendar.bottom - calendar.top
+        val dialHeight = rule.onNodeWithTag(TAG_DIAL).fetchSemanticsNode().size.height
+        val calendarHeight = rule.onNodeWithTag(TAG_CALENDAR).fetchSemanticsNode().size.height
         assertTrue("cadran $dialHeight > calendrier $calendarHeight", dialHeight <= calendarHeight)
     }
 

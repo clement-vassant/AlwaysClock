@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/clement-vassant/AlwaysClock/actions/workflows/ci.yml)
 
-**Le mode StandBy de l'iPhone sur Android : une grande horloge en paysage pendant que le téléphone charge.**
+**Le mode StandBy de l'iPhone sur Android : une grande horloge pendant que le téléphone charge, en paysage comme en portrait.**
 
 Fonctionne sur tout téléphone ou tablette Android 10 ou plus récent. Appareil de test : un Galaxy Z Fold (voir [Écrans pliables](#écrans-pliables)).
 
@@ -11,6 +11,8 @@ Fonctionne sur tout téléphone ou tablette Android 10 ou plus récent. Appareil
 | ![Horloge digitale en mode nuit sur un téléphone](screenshots/fold-01.png) | ![Horloge analogique et calendrier sur un téléphone](screenshots/fold-analog.png) |
 | **Grand écran, Digital** | **Grand écran, Minimal en mode nuit** |
 | ![Horloge digitale et calendrier sur le grand écran](screenshots/01-digital.png) | ![Horloge minimale en mode nuit sur le grand écran](screenshots/04-minimal-nuit.png) |
+| **Portrait, Digital** | **Portrait, analogique** |
+| ![Écran de veille en portrait : horloge digitale en haut, calendrier dessous](screenshots/portrait-digital.png) | ![Écran de veille en portrait : cadran analogique en haut, calendrier dessous](screenshots/portrait-analog.png) |
 
 ## Pourquoi
 
@@ -22,7 +24,7 @@ Sur Android, l'écran toujours allumé (Always On Display) est réservé au syst
 ## Fonctionnalités
 
 - **Trois styles d'horloge** : Digital (grands chiffres), Analogique (cadran à aiguilles) et Minimal (chiffres fins). Le choix est mémorisé.
-- **Calendrier du mois** à côté de l'horloge, avec le jour courant entouré. Un appui long l'affiche ou le masque.
+- **Calendrier du mois** à côté de l'horloge (dessous en portrait), avec le jour courant entouré. Un appui long l'affiche ou le masque.
 - **Musique en cours** (Spotify ou tout lecteur) : quand un morceau joue, ou est en pause depuis moins de 10 minutes, une carte remplace le calendrier. Elle montre la pochette atténuée (en gris la nuit), le titre, l'artiste et des boutons précédent, lecture/pause, suivant et « j'aime » (si le lecteur le propose, comme Spotify). Il faut accorder à l'app l'*accès aux notifications* une fois, depuis ses réglages.
 - **Jour ou nuit rouge** : en *Auto*, la nuit suit une plage horaire (22:00 → 07:00 par défaut) ; on peut aussi forcer *Jour* ou *Nuit*. Le mode nuit passe en rouge sombre à luminosité minimale pour préserver la vision nocturne.
 - **Gestes** :
@@ -31,8 +33,9 @@ Sur Android, l'écran toujours allumé (Always On Display) est réservé au syst
   - appui long pour afficher ou masquer le calendrier ;
   - double toucher pour ouvrir les réglages.
 - **Lancement pendant la charge** grâce à l'écran de veille Android.
+- **Paysage ou portrait** : en paysage, l'horloge et le calendrier sont côte à côte ; en portrait (téléphone debout sur son chargeur, par exemple), l'horloge passe en haut et le calendrier dessous. Le réglage *Orientation de l'écran de veille* permet aussi de rester toujours en paysage, l'horloge tournée d'un quart de tour, si la rotation automatique est coupée.
 - **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis vos routines ou outils d'automatisation (par exemple *Modes et routines* sur Samsung, ou Tasker), à heure fixe ou au début d'un mode.
-- **Réglages** : style, calendrier, musique en cours, jour/nuit et plage de nuit, délai d'extinction.
+- **Réglages** : style, calendrier, musique en cours, jour/nuit et plage de nuit, orientation de l'écran de veille, délai d'extinction.
 - **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
 Pas de publicité, pas de réseau. Seul l'accès aux notifications est demandé, et uniquement pour la musique en cours (facultatif).
@@ -88,7 +91,7 @@ Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil
 
 ## Écrans pliables
 
-Sur un téléphone pliable, l'horloge s'affiche sur l'écran actif : l'écran extérieur quand il est plié (posé sur un dock, par exemple), le grand écran quand il est ouvert. Les captures ci-dessus viennent de l'écran extérieur d'un Galaxy Z Fold. Tenu ouvert en portrait, Android 16 affiche l'horloge dans une bande paysage au lieu de faire tourner l'écran.
+Sur un téléphone pliable, l'horloge s'affiche sur l'écran actif : l'écran extérieur quand il est plié (posé sur un dock, par exemple), le grand écran quand il est ouvert. Les captures ci-dessus viennent de l'écran extérieur d'un Galaxy Z Fold. Tenu ouvert en portrait, l'écran de veille affiche l'horloge et le calendrier l'un au-dessus de l'autre ; l'app plein écran, elle, reste dans une bande paysage (Android 16 n'y fait pas tourner l'écran).
 
 ## Protection de l'écran
 
@@ -96,7 +99,7 @@ Les fabricants d'écrans OLED (Samsung notamment) conseillent d'éviter les imag
 
 - **Fond noir pur** : les pixels OLED du fond restent éteints.
 - **Orbite anti-marquage** : tout le contenu se déplace chaque minute sur une spirale lente jusqu'à ±20 dp, sans jamais rester deux minutes au même endroit.
-- **Inversion des côtés chaque heure** : heures paires, horloge à gauche et calendrier à droite ; heures impaires, l'inverse.
+- **Inversion des côtés chaque heure** : heures paires, horloge à gauche et calendrier à droite (en portrait : horloge en haut, calendrier dessous) ; heures impaires, l'inverse.
 - **Moins de pixels allumés** : pas de blanc pur (gris clair `#BDBDBD` le jour), jour du calendrier entouré d'un anneau fin plutôt que d'un disque plein, mode nuit rouge sombre.
 - **Luminosité plafonnée** : 35 % le jour, minimale la nuit (dans l'app) ; l'écran de veille demande un écran atténué.
 - **Arrêt automatique** : réglage *Éteindre après* (1 h, 2 h, 4 h, 8 h, Jamais ; 2 h par défaut). Le délai écoulé, l'horloge se ferme et l'écran peut s'éteindre normalement.
@@ -133,6 +136,8 @@ Paramètres > Affichage > **Écran de veille** (le chemin varie selon les fabric
 2. Quand démarrer : **Pendant la charge**.
 
 Astuce : le bouton ⚙ de l'écran de veille ouvre les réglages de l'app.
+
+L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge (filaire ou par induction) : poser le téléphone écran allumé. Réglage **Orientation de l'écran de veille** : *Automatique* suit l'écran (en portrait, horloge et calendrier l'un au-dessus de l'autre, qui échangent leur place chaque heure) ; *Toujours paysage* tourne l'horloge d'un quart de tour quand l'écran est en portrait (rotation automatique coupée), pour la lire téléphone couché, haut de l'écran vers la gauche.
 
 ## Tests
 

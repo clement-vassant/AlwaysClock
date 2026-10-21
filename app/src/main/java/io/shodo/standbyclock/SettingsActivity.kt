@@ -41,7 +41,10 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.shodo.standbyclock.ui.DayColors
 import io.shodo.standbyclock.ui.TAG_CALENDAR_SWITCH
 
-/** Réglages : style, calendrier, jour/nuit, plage horaire de nuit et extinction automatique. Ouvert aussi par le ⚙ de l'écran de veille. */
+/**
+ * Réglages : style, calendrier, jour/nuit, plage horaire de nuit, orientation et extinction automatique.
+ * Ouvert aussi par le ⚙ de l'écran de veille.
+ */
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +96,7 @@ internal fun SettingsScreen(
     var nightEnd by remember { mutableIntStateOf(prefs.nightEnd) }
     var autoOff by remember { mutableIntStateOf(prefs.autoOffMinutes) }
     var media by remember { mutableStateOf(prefs.showMedia) }
+    var orientation by remember { mutableStateOf(prefs.orientation) }
     // Revérifié au retour des réglages Android.
     var mediaAccess by remember { mutableStateOf(false) }
     val currentHasMediaAccess by rememberUpdatedState(hasMediaAccess)
@@ -176,6 +180,24 @@ internal fun SettingsScreen(
                     }) { Text(formatMinutes(nightEnd)) }
                 }
             }
+        }
+
+        Section("Orientation de l'écran de veille") {
+            Choices(
+                options = listOf(OrientationMode.AUTO to "Automatique", OrientationMode.LANDSCAPE to "Toujours paysage"),
+                selected = orientation
+            ) {
+                orientation = it
+                prefs.orientation = it
+            }
+            Text(
+                if (orientation == OrientationMode.AUTO) {
+                    "Suit l'écran : côte à côte en paysage, horloge et calendrier l'un au-dessus de l'autre en portrait."
+                } else {
+                    "Écran en portrait : l'horloge est tournée pour se lire téléphone couché, haut de l'écran vers la gauche."
+                },
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         Section("Éteindre après") {

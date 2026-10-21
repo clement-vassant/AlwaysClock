@@ -67,6 +67,15 @@ class SettingsScreenTest {
         assertEquals(emptySet<Long>(), prefs.shownCalendars)
     }
 
+    // Toucher le nom de l'agenda suffit : toute la ligne coche la case.
+    @Test
+    fun touchingTheCalendarNameTicksIt() {
+        showSettings()
+        rule.onNodeWithText("Famille (clement@example.com)").performScrollTo().performClick()
+        assertEquals(setOf(family.id), prefs.shownCalendars)
+        rule.onNodeWithTag(calendarChoiceTag(family.id)).assertIsOn()
+    }
+
     @Test
     fun calendarAccessIsAskedBeforeListingCalendars() {
         calendarAccess = false

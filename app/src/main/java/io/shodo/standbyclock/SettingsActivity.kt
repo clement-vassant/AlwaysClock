@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -40,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.shodo.standbyclock.ui.DayColors
@@ -303,15 +305,18 @@ private fun EventsSettings(prefs: ClockPrefs, source: CalendarSource) {
                 )
                 if (calendars.isEmpty()) Text("Aucun agenda sur cet appareil.", style = MaterialTheme.typography.bodyMedium)
                 for (calendar in calendars) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = calendar.id in shown,
-                            modifier = Modifier.testTag(calendarChoiceTag(calendar.id)),
-                            onCheckedChange = { checked ->
+                    // Toute la ligne se coche, libellé compris : la case seule est une cible trop petite.
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .toggleable(value = calendar.id in shown, role = Role.Checkbox) { checked ->
                                 shown = if (checked) shown + calendar.id else shown - calendar.id
                                 prefs.shownCalendars = shown
                             }
-                        )
+                            .testTag(calendarChoiceTag(calendar.id)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(checked = calendar.id in shown, onCheckedChange = null)
                         Text(calendar.label())
                     }
                 }

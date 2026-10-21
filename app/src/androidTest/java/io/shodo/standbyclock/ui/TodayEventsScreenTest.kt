@@ -56,8 +56,10 @@ class TodayEventsScreenTest {
         prefs.shownCalendars = setOf(work, family)
     }
 
+    // Paysage qui tient en entier dans l'émulateur de la CI (320 dp de large) : assertIsDisplayed échoue
+    // sur un texte rogné par le bord de l'écran, comme « semaine 43 » collé à droite.
     private fun show(events: List<CalendarEvent>, forcedTheme: ThemeMode? = null) = rule.setContent {
-        Box(Modifier.size(width = 400.dp, height = 240.dp)) {
+        Box(Modifier.size(width = 320.dp, height = 192.dp)) {
             StandByScreen(
                 prefs = prefs,
                 forcedTheme = forcedTheme,

@@ -34,5 +34,6 @@ Les utiliser plutôt que tout faire dans la conversation principale :
 | `code-reviewer` | avant d'ouvrir ou de finaliser une PR : relit le diff contre ces règles |
 | `test-writer` | dès qu'un comportement change : écrit ou complète les tests unitaires et Compose |
 | `ci-doctor` | quand un job de la CI échoue : trouve la cause et propose le correctif minimal |
+| `designer` | dès qu'un changement touche l'interface, avant tout code : questions UI et UX une à la fois, 3 ou 4 maquettes dans un canevas Design, puis le plan |
 | `compose-ui` | pour une nouvelle vue ou un nouveau style d'horloge : Compose, anti-marquage, nuit |
 | `releaser` | quand une release est demandée : lance le workflow Release sur `main`, suit l'exécution, rend la version et l'APK |

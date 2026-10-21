@@ -25,7 +25,7 @@ Sur Android, l'écran toujours allumé (Always On Display) est réservé au syst
 
 - **Trois styles d'horloge** : Digital (grands chiffres), Analogique (cadran à aiguilles) et Minimal (chiffres fins). Le choix est mémorisé.
 - **Calendrier du mois** à côté de l'horloge (dessous en portrait), avec le jour courant entouré. Un appui long l'affiche ou le masque.
-- **Musique en cours** (Spotify ou tout lecteur) : quand un morceau joue, ou est en pause depuis moins de 10 minutes, une carte remplace le calendrier. Elle montre la pochette atténuée (en gris la nuit), le titre, l'artiste et des boutons précédent, lecture/pause, suivant et « j'aime » (si le lecteur le propose, comme Spotify). Il faut accorder à l'app l'*accès aux notifications* une fois, depuis ses réglages.
+- **Musique en cours** (Spotify ou tout lecteur) : quand un morceau joue, ou est en pause depuis moins de 10 minutes, une barre s'affiche sous l'heure, dans les trois styles (les chiffres ou le cadran se réduisent un peu pour lui faire place). Calendrier masqué par l'appui long, c'est une grande carte qui prend sa place. Barre et carte montrent la pochette atténuée (en gris la nuit), le titre, l'artiste et des boutons précédent, lecture/pause, suivant et « j'aime » (si le lecteur le propose, comme Spotify). Il faut accorder à l'app l'*accès aux notifications* une fois, depuis ses réglages.
 - **Jour ou nuit rouge** : en *Auto*, la nuit suit une plage horaire (22:00 → 07:00 par défaut) ; on peut aussi forcer *Jour* ou *Nuit*. Le mode nuit passe en rouge sombre à luminosité minimale pour préserver la vision nocturne.
 - **Gestes** :
   - balayer à gauche ou à droite pour changer de style ;
@@ -141,11 +141,11 @@ L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge
 
 ## Tests
 
-- **Tests unitaires** (JVM, rapides) : plage de nuit, raccourcis jour/nuit, grille du calendrier, côté de l'horloge, orbite anti-marquage, rythme de rafraîchissement, détection du « j'aime » et affichage de la carte musique.
+- **Tests unitaires** (JVM, rapides) : plage de nuit, raccourcis jour/nuit, grille du calendrier, côté de l'horloge, orbite anti-marquage, rythme de rafraîchissement, détection du « j'aime », affichage et place de la musique (sous l'heure, ou carte si le calendrier est masqué).
   ```bash
   mise exec -- ./gradlew testDebugUnitTest
   ```
-- **Tests d'interface** (Compose, sur un émulateur ou un téléphone branché, à heure fixe) : calendrier affiché par défaut, calendrier et musique visibles ensemble, cadran pas plus haut que le calendrier, toucher pour la nuit, appui long pour le calendrier, balayage entre les styles.
+- **Tests d'interface** (Compose, sur un émulateur ou un téléphone branché, à heure fixe) : calendrier affiché par défaut, calendrier et musique visibles ensemble, barre musique sous l'heure sans chevauchement en paysage et en portrait (3 styles), carte musique si le calendrier est masqué, cadran pas plus haut que le calendrier, toucher pour la nuit, appui long pour le calendrier, balayage entre les styles.
   ```bash
   mise exec -- ./gradlew connectedDebugAndroidTest
   ```

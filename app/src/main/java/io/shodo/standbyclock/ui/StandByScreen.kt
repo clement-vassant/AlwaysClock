@@ -44,8 +44,11 @@ import kotlinx.coroutines.delay
 /** Largeur relative de l'horloge ; le panneau d'à côté (calendrier, musique) a une largeur de 1. */
 const val CLOCK_PANE_WEIGHT = 1.4f
 
-/** Hauteur relative de la barre musique sous le calendrier (le calendrier a une hauteur de 1). */
+/** Hauteur relative de la barre musique sous l'horloge (l'horloge a une hauteur de 1). */
 const val MEDIA_BAR_WEIGHT = 0.28f
+
+/** Largeur de la barre musique, en fraction de celle de l'horloge : elle reste groupée sous l'heure. */
+const val MEDIA_BAR_WIDTH_FRACTION = 0.9f
 
 /** Orbite anti-marquage : positions par tour, tours pour aller du centre au bord, rayons min et max (dp). */
 private const val ORBIT_POSITIONS_PER_TURN = 12
@@ -96,7 +99,7 @@ fun StandByScreen(
 
     val pager = rememberStylePager(prefs, resumes)
 
-    // Musique en lecture (ou en pause depuis peu) : barre sous le calendrier, ou tout le panneau s'il est masqué.
+    // Musique en lecture (ou en pause depuis peu) : barre sous l'horloge, ou tout le panneau si le calendrier est masqué.
     val media = nowPlaying?.takeIf { it.isRecent(clock.millis()) }
     val state = ScreenState(now, if (night) NightColors else DayColors, night, showCalendar, media)
     Box(
@@ -129,6 +132,7 @@ internal class ScreenState(
     val media: NowPlaying?
 ) {
     val hasSidePane get() = media != null || showCalendar
+    val mediaPlacement get() = mediaPlacementFor(hasMedia = media != null, showCalendar = showCalendar)
 }
 
 /** Nombre de reprises de l'écran (onResume) : sert de clé pour relire les réglages. */

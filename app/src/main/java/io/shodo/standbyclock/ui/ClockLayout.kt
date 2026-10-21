@@ -82,7 +82,8 @@ private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean, 
             colors,
             showDate = !state.hasSidePane,
             showSeconds = !night,
-            matchCalendar = !portrait,
+            // La semaine et sa liste n'ont pas la hauteur du mois : le cadran remplit alors son panneau.
+            matchCalendar = !portrait && !state.showsAgenda,
             // Barre musique sous l'horloge : le calendrier, lui, garde toute la hauteur du panneau.
             calendarHeight = if (barUnderClock) 1f + MEDIA_BAR_WEIGHT else 1f
         )
@@ -92,17 +93,17 @@ private fun ClockFace(style: ClockStyle, state: ScreenState, portrait: Boolean, 
 }
 
 /**
- * Panneau à côté de l'horloge (ou dessous en portrait) : le calendrier, ou, s'il est masqué (appui long),
- * la grande carte musique.
+ * Panneau à côté de l'horloge (ou dessous en portrait) : le calendrier du mois, ou la semaine et les
+ * événements du jour qui restent ; s'il est masqué (appui long), la grande carte musique.
  */
 @Composable
 private fun SidePane(state: ScreenState, modifier: Modifier = Modifier) {
     val media = state.media?.takeIf { state.mediaPlacement == MediaPlacement.SIDE_CARD }
     Box(modifier, contentAlignment = Alignment.Center) {
-        if (media != null) {
-            MediaCard(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_CARD))
-        } else {
-            MonthCalendar(state.now, state.colors)
+        when {
+            media != null -> MediaCard(media, state.colors, state.night, Modifier.testTag(TAG_MEDIA_CARD))
+            state.showsAgenda -> WeekAgenda(state.now, state.agenda, state.colors)
+            else -> MonthCalendar(state.now, state.colors)
         }
     }
 }

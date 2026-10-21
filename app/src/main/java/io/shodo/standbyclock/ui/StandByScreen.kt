@@ -27,14 +27,21 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import io.shodo.standbyclock.AgendaLines
+import io.shodo.standbyclock.CalendarEvent
 import io.shodo.standbyclock.ClockPrefs
 import io.shodo.standbyclock.ClockStyle
 import io.shodo.standbyclock.MILLIS_PER_MINUTE
 import io.shodo.standbyclock.MILLIS_PER_SECOND
 import io.shodo.standbyclock.NowPlaying
+import io.shodo.standbyclock.SECONDS_PER_MINUTE
 import io.shodo.standbyclock.ThemeMode
+import io.shodo.standbyclock.agendaLines
+import io.shodo.standbyclock.rememberCalendarEvents
 import io.shodo.standbyclock.rememberNowPlaying
+import io.shodo.standbyclock.todayAgenda
 import java.time.Clock
+import java.time.LocalDate
 import java.time.ZonedDateTime
 import kotlin.math.PI
 import kotlin.math.cos
@@ -63,6 +70,7 @@ private const val ORBIT_MAX_RADIUS_DP = 20f
  * @param onOpenSettings double toucher ; null dans l'écran de veille, qui a son propre bouton de réglages.
  * @param clock heure utilisée (injectable pour les tests).
  * @param nowPlayingSource musique en cours (injectable pour les tests).
+ * @param eventsSource événements de l'agenda autour d'un jour (injectable pour les tests).
  */
 @Composable
 fun StandByScreen(
@@ -72,7 +80,10 @@ fun StandByScreen(
     onOpenSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
     clock: Clock = Clock.systemDefaultZone(),
-    nowPlayingSource: @Composable (enabled: Boolean) -> NowPlaying? = { rememberNowPlaying(it).value }
+    nowPlayingSource: @Composable (enabled: Boolean) -> NowPlaying? = { rememberNowPlaying(it).value },
+    eventsSource: @Composable (enabled: Boolean, day: LocalDate) -> List<CalendarEvent> = { enabled, day ->
+        rememberCalendarEvents(enabled, day).value
+    }
 ) {
     // La nuit, rien n'affiche les secondes : on ne se réveille qu'une fois par minute (économie d'énergie).
     var minuteTicks by remember { mutableStateOf(false) }
@@ -97,11 +108,21 @@ fun StandByScreen(
     }
     LaunchedEffect(showCalendar) { prefs.showCalendar = showCalendar }
 
+    // Événements du jour : jamais la nuit (le mois seul, moins de pixels allumés), donc pas de lecture de l'agenda.
+    val showEvents = remember(resumes) { prefs.showEvents }
+    val shownCalendars = remember(resumes) { prefs.shownCalendars }
+    val events = key(resumes) { eventsSource(showEvents && !night && shownCalendars.isNotEmpty(), now.toLocalDate()) }
+    // Recalculé une fois par minute : un événement terminé disparaît, un autre passe en cours.
+    val epochMinute = now.toEpochSecond() / SECONDS_PER_MINUTE
+    val agenda = remember(events, shownCalendars, night, epochMinute) {
+        if (night) NO_AGENDA else agendaLines(todayAgenda(events, now, shownCalendars))
+    }
+
     val pager = rememberStylePager(prefs, resumes)
 
     // Musique en lecture (ou en pause depuis peu) : barre sous l'horloge, ou tout le panneau si le calendrier est masqué.
     val media = nowPlaying?.takeIf { it.isRecent(clock.millis()) }
-    val state = ScreenState(now, if (night) NightColors else DayColors, night, showCalendar, media)
+    val state = ScreenState(now, if (night) NightColors else DayColors, night, showCalendar, media, agenda)
     Box(
         modifier
             .fillMaxSize()
@@ -129,11 +150,17 @@ internal class ScreenState(
     val colors: ClockColors,
     val night: Boolean,
     val showCalendar: Boolean,
-    val media: NowPlaying?
+    val media: NowPlaying?,
+    /** Événements du jour restants : la semaine et leur liste remplacent alors le mois. */
+    val agenda: AgendaLines = NO_AGENDA
 ) {
     val hasSidePane get() = media != null || showCalendar
+    val showsAgenda get() = showCalendar && agenda.count > 0
     val mediaPlacement get() = mediaPlacementFor(hasMedia = media != null, showCalendar = showCalendar)
 }
+
+/** Aucun événement à afficher : le panneau garde le mois. */
+internal val NO_AGENDA = AgendaLines(emptyList(), 0)
 
 /** Nombre de reprises de l'écran (onResume) : sert de clé pour relire les réglages. */
 @Composable

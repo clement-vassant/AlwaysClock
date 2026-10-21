@@ -73,4 +73,25 @@ class LayoutLogicTest {
         assertEquals(655L, tickDelayMillis(everyMinute = false, nowMillis = now))
         assertEquals(60_000L, tickDelayMillis(everyMinute = true, nowMillis = minuteStart))
     }
+
+    @Test
+    fun `week runs from monday to sunday around the day`() {
+        // Mardi 20 octobre 2026 : semaine du lundi 19 au dimanche 25, semaine ISO 43.
+        val week = weekOf(LocalDate.of(2026, 10, 20))
+        assertEquals(LocalDate.of(2026, 10, 19), week.first())
+        assertEquals(LocalDate.of(2026, 10, 25), week.last())
+        assertEquals(7, week.size)
+        assertEquals(43, isoWeekNumber(LocalDate.of(2026, 10, 20)))
+        // Dimanche : il clôt sa semaine, il n'en ouvre pas une.
+        assertEquals(LocalDate.of(2026, 10, 19), weekOf(LocalDate.of(2026, 10, 25)).first())
+    }
+
+    @Test
+    fun `week can straddle two months and two years`() {
+        // Jeudi 31 décembre 2026 : semaine du lundi 28 décembre au dimanche 3 janvier, semaine ISO 53.
+        val week = weekOf(LocalDate.of(2026, 12, 31))
+        assertEquals(LocalDate.of(2026, 12, 28), week.first())
+        assertEquals(LocalDate.of(2027, 1, 3), week.last())
+        assertEquals(53, isoWeekNumber(LocalDate.of(2026, 12, 31)))
+    }
 }

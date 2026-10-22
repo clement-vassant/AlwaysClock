@@ -174,7 +174,7 @@ Le détail (jobs de la CI, conventions de code) est dans [CONTRIBUTING.md](CONTR
 ## Structure
 
 ```
-app/src/main/java/io/shodo/standbyclock/
+app/src/main/java/fr/clementvassant/standbyclock/
   MainActivity.kt          activité plein écran, paysage, écran allumé
   StandByDreamService.kt   écran de veille Android (charge)
   SettingsActivity.kt      réglages (style, calendrier, jour/nuit, plage de nuit)

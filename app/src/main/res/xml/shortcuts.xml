@@ -7,8 +7,8 @@
         android:shortcutShortLabel="@string/day_clock">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="io.shodo.standbyclock"
-            android:targetClass="io.shodo.standbyclock.MainActivity">
+            android:targetPackage="fr.clementvassant.standbyclock"
+            android:targetClass="fr.clementvassant.standbyclock.MainActivity">
             <extra android:name="theme" android:value="day" />
         </intent>
     </shortcut>
@@ -18,8 +18,8 @@
         android:shortcutShortLabel="@string/night_clock">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="io.shodo.standbyclock"
-            android:targetClass="io.shodo.standbyclock.MainActivity">
+            android:targetPackage="fr.clementvassant.standbyclock"
+            android:targetClass="fr.clementvassant.standbyclock.MainActivity">
             <extra android:name="theme" android:value="night" />
         </intent>
     </shortcut>
@@ -29,7 +29,7 @@
         android:shortcutShortLabel="@string/settings">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="io.shodo.standbyclock"
-            android:targetClass="io.shodo.standbyclock.SettingsActivity" />
+            android:targetPackage="fr.clementvassant.standbyclock"
+            android:targetClass="fr.clementvassant.standbyclock.SettingsActivity" />
     </shortcut>
 </shortcuts>

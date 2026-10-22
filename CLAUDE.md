@@ -1,7 +1,7 @@
 # StandBy Clock : consignes pour Claude
 
 App Android (Kotlin, Jetpack Compose) qui affiche une grande horloge en paysage pendant la charge, façon StandBy.
-Package `io.shodo.standbyclock`, minSdk 29, Java 17 via `mise.toml`. Réponses et textes visibles en français.
+Package `fr.clementvassant.standbyclock`, minSdk 29, Java 17 via `mise.toml`. Réponses et textes visibles en français.
 
 ## Règles de travail
 

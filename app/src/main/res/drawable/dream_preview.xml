@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Vignette de l'écran de veille dans les réglages Android : l'écran réel en miniature (heure Digital et calendrier du mois).
-     Les chiffres sont tracés : un vector drawable ne sait pas afficher de texte. -->
+     Les chiffres sont tracés : un vector drawable ne sait pas afficher de texte.
+     Taille intrinsèque sous 200 dp (règle Lint VectorRaster) : les réglages la mettent de toute façon à l'échelle. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="320dp" android:height="180dp"
+    android:width="192dp" android:height="108dp"
     android:viewportWidth="320" android:viewportHeight="180">
     <path android:fillColor="#000000" android:pathData="M0,0h320v180h-320z" />
     <!-- 07:42 : heures en gris clair, minutes en orange, comme le style Digital. -->

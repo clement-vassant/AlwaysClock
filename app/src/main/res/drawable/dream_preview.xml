@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vignette de l'écran de veille dans les réglages Android : l'écran réel en miniature (heure Digital et calendrier du mois).
+     Les chiffres sont tracés : un vector drawable ne sait pas afficher de texte. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp" android:height="180dp"
+    android:viewportWidth="320" android:viewportHeight="180">
+    <path android:fillColor="#000000" android:pathData="M0,0h320v180h-320z" />
+    <!-- 07:42 : heures en gris clair, minutes en orange, comme le style Digital. -->
+    <path android:strokeColor="#BDBDBD" android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M30,66a15,14 0,0 1,30 0v28a15,14 0,0 1,-30 0zM68,52h30L78,108" />
+    <path android:fillColor="#8E8E93"
+        android:pathData="M105,70a5,5 0,1 0,10 0a5,5 0,1 0,-10 0zM105,92a5,5 0,1 0,10 0a5,5 0,1 0,-10 0z" />
+    <path android:strokeColor="#FF9F0A" android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M144,108V52L122,90H152M160,64a15,13 0,0 1,30 2c0,10 -8,16 -30,42h30" />
+    <!-- Ligne de la date. -->
+    <path android:strokeColor="#8E8E93" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M70,128H150" />
+    <!-- Calendrier du mois : titre en orange, jours en trame, aujourd'hui en orange. -->
+    <path android:strokeColor="#FF9F0A" android:strokeWidth="6" android:strokeLineCap="round"
+        android:pathData="M217,56H254" />
+    <path android:fillColor="#48484A" android:pathData="M250,70h8v8h-8zM262,70h8v8h-8zM274,70h8v8h-8zM286,70h8v8h-8zM214,82h8v8h-8zM226,82h8v8h-8zM238,82h8v8h-8zM250,82h8v8h-8zM262,82h8v8h-8zM274,82h8v8h-8zM286,82h8v8h-8zM214,94h8v8h-8zM226,94h8v8h-8zM238,94h8v8h-8zM250,94h8v8h-8zM262,94h8v8h-8zM274,94h8v8h-8zM286,94h8v8h-8zM214,106h8v8h-8zM226,106h8v8h-8zM238,106h8v8h-8zM262,106h8v8h-8zM274,106h8v8h-8zM286,106h8v8h-8zM214,118h8v8h-8zM226,118h8v8h-8zM238,118h8v8h-8zM250,118h8v8h-8zM262,118h8v8h-8zM274,118h8v8h-8z" />
+    <path android:fillColor="#FF9F0A" android:pathData="M250,106h8v8h-8z" />
+</vector>

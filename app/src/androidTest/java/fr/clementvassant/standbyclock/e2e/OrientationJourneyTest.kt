@@ -28,6 +28,8 @@ import org.junit.runner.RunWith
  * Réglage Orientation de l'horloge plein écran : « Automatique » suit la rotation du téléphone (côte à côte en
  * paysage, l'un au-dessus de l'autre en portrait), « Toujours paysage » reste en paysage téléphone debout.
  * La rotation est imposée par UI Automator (verrou de rotation), comme un utilisateur qui tourne son téléphone.
+ * En « Automatique », on tourne une fois l'horloge affichée : tourné sur l'écran d'accueil, qui reste en portrait
+ * sur un téléphone, l'émulateur de la CI n'appliquait pas la rotation à l'horloge ouverte ensuite.
  */
 @RunWith(AndroidJUnit4::class)
 class OrientationJourneyTest {
@@ -46,8 +48,9 @@ class OrientationJourneyTest {
 
     @Test
     fun automaticPutsClockAndCalendarSideBySideInLandscape() = uiAutomator {
-        device.setOrientationLandscape()
         E2e.open(MainActivity::class.java)
+        clockScreen()
+        device.setOrientationLandscape()
         clockScreen(landscape = true)
         val (clock, calendar) = clockAndCalendar()
         assertTrue("Horloge à côté du calendrier : $clock / $calendar", clock.right <= calendar.left || calendar.right <= clock.left)
@@ -56,8 +59,9 @@ class OrientationJourneyTest {
 
     @Test
     fun automaticStacksClockAndCalendarInPortrait() = uiAutomator {
-        device.setOrientationPortrait()
         E2e.open(MainActivity::class.java)
+        clockScreen()
+        device.setOrientationPortrait()
         clockScreen(landscape = false)
         val (clock, calendar) = clockAndCalendar()
         assertTrue(

@@ -33,13 +33,24 @@ internal class ScreenSaver(private val device: UiDevice) {
             answers += "$ $command\n" + shell(command).trim()
             if (isShown(ATTEMPT_TIMEOUT_MS)) return
         }
-        startAsWhileCharging()
-        if (isShown(SLEEP_TIMEOUT_MS)) return
+        // Sur l'émulateur de la CI, une fois sur trois environ, l'écran reste allumé sans lancer l'écran de veille :
+        // on éteint puis rallume l'écran avant un second essai, ce qui repart d'un état de veille propre.
+        repeat(CHARGING_ATTEMPTS) { attempt ->
+            if (attempt > 0) {
+                shell("input keyevent KEYCODE_SLEEP")
+                device.waitForIdle()
+            }
+            startAsWhileCharging()
+            if (isShown(SLEEP_TIMEOUT_MS)) return
+        }
 
         shell("mkdir -p ${E2e.CAPTURES_DIR}")
         shell("screencap -p ${E2e.CAPTURES_DIR}/ecran-de-veille-echec.png")
-        val state = shell("dumpsys dreams").lines().take(DUMP_LINES).joinToString("\n")
-        throw AssertionError("L'écran de veille ne s'est pas affiché.\n${answers.joinToString("\n")}\n$ dumpsys dreams\n$state")
+        val dreams = shell("dumpsys dreams").lines().take(DUMP_LINES).joinToString("\n")
+        val power = shell("dumpsys power").lines().filter { line -> POWER_KEYS.any { it in line } }.joinToString("\n")
+        throw AssertionError(
+            "L'écran de veille ne s'est pas affiché.\n${answers.joinToString("\n")}\n$ dumpsys dreams\n$dreams\n$ dumpsys power\n$power"
+        )
     }
 
     /** Retour : un écran de veille interactif se ferme au bouton retour, comme pour l'utilisateur. */
@@ -73,7 +84,11 @@ internal class ScreenSaver(private val device: UiDevice) {
 
         /** Android impose au moins 10 s avant la mise en veille, plus la phase où l'écran baisse. */
         const val SHORTEST_SCREEN_OFF_MS = 10_000
-        const val SLEEP_TIMEOUT_MS = 60_000L
+        const val SLEEP_TIMEOUT_MS = 35_000L
+        const val CHARGING_ATTEMPTS = 2
         const val DUMP_LINES = 40
+
+        /** Lignes de `dumpsys power` qui disent pourquoi Android n'a pas lancé l'écran de veille. */
+        val POWER_KEYS = listOf("mWakefulness", "mIsPowered", "mStayOn", "mDream", "mScreenOffTimeout", "mLastUserActivityTime")
     }
 }

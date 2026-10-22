@@ -23,11 +23,11 @@ val appVersionCode =
 val releaseKeystorePath: String? = System.getenv("RELEASE_KEYSTORE_PATH")
 
 android {
-    namespace = "io.shodo.standbyclock"
+    namespace = "fr.clementvassant.standbyclock"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "io.shodo.standbyclock"
+        applicationId = "fr.clementvassant.standbyclock"
         minSdk = 29
         targetSdk = 35
         versionCode = appVersionCode

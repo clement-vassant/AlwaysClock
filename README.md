@@ -13,6 +13,8 @@ Fonctionne sur tout téléphone ou tablette Android 10 ou plus récent. Appareil
 | ![Horloge digitale et calendrier sur le grand écran](screenshots/01-digital.png) | ![Horloge minimale en mode nuit sur le grand écran](screenshots/04-minimal-nuit.png) |
 | **Portrait, Digital** | **Portrait, analogique** |
 | ![Écran de veille en portrait : horloge digitale en haut, calendrier dessous](screenshots/portrait-digital.png) | ![Écran de veille en portrait : cadran analogique en haut, calendrier dessous](screenshots/portrait-analog.png) |
+| **Grand écran, événements du jour** | **Portrait, événements du jour** |
+| ![Semaine en cours et événements du jour à côté de l'horloge digitale](screenshots/evenements-digital.png) | ![Écran de veille en portrait : semaine et événements du jour en haut, horloge minimale dessous](screenshots/evenements-portrait.png) |
 
 ## Pourquoi
 
@@ -47,6 +49,10 @@ Pas de publicité, pas de réseau. Deux autorisations facultatives : l'accès au
 | Minimal | Sans calendrier | Réglages |
 |---|---|---|
 | ![Minimal](screenshots/03-minimal.png) | ![Sans calendrier](screenshots/05-minimal-sans-calendrier.png) | ![Réglages](screenshots/08-reglages.png) |
+
+| Analogique et événements du jour |
+|---|
+| ![Cadran analogique à côté de la semaine et des événements du jour](screenshots/evenements-analog.png) |
 
 </details>
 

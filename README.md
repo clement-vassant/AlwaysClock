@@ -13,6 +13,8 @@ Fonctionne sur tout téléphone ou tablette Android 10 ou plus récent. Appareil
 | ![Horloge digitale et calendrier sur le grand écran](screenshots/01-digital.png) | ![Horloge minimale en mode nuit sur le grand écran](screenshots/04-minimal-nuit.png) |
 | **Portrait, Digital** | **Portrait, analogique** |
 | ![Écran de veille en portrait : horloge digitale en haut, calendrier dessous](screenshots/portrait-digital.png) | ![Écran de veille en portrait : cadran analogique en haut, calendrier dessous](screenshots/portrait-analog.png) |
+| **Grand écran, événements du jour** | **Portrait, événements du jour** |
+| ![Semaine en cours et événements du jour à côté de l'horloge digitale](screenshots/evenements-digital.png) | ![Écran de veille en portrait : semaine et événements du jour en haut, horloge minimale dessous](screenshots/evenements-portrait.png) |
 
 ## Pourquoi
 
@@ -25,6 +27,7 @@ Sur Android, l'écran toujours allumé (Always On Display) est réservé au syst
 
 - **Trois styles d'horloge** : Digital (grands chiffres), Analogique (cadran à aiguilles) et Minimal (chiffres fins). Le choix est mémorisé.
 - **Calendrier du mois** à côté de l'horloge (dessous en portrait), avec le jour courant entouré. Un appui long l'affiche ou le masque.
+- **Événements du jour** : tant qu'il reste un événement aujourd'hui dans les agendas cochés, le mois laisse la place à la semaine en cours et à la liste du jour (4 lignes au plus, puis « +N autres ») : « Journée », « → 15:00 » pour un événement en cours, sinon l'heure de début. Les événements terminés disparaissent, les invitations refusées sont masquées ; sans événement, et toujours la nuit, le mois revient. Les agendas se cochent un par un dans les réglages (aucun au départ), après avoir autorisé la lecture de l'agenda. La liste se met à jour dès que l'agenda change, sans interroger régulièrement.
 - **Musique en cours** (Spotify ou tout lecteur) : quand un morceau joue, ou est en pause depuis moins de 10 minutes, une barre s'affiche sous l'heure, dans les trois styles (les chiffres ou le cadran se réduisent un peu pour lui faire place). Calendrier masqué par l'appui long, c'est une grande carte qui prend sa place. Barre et carte montrent la pochette atténuée (en gris la nuit), le titre, l'artiste et des boutons précédent, lecture/pause, suivant et « j'aime » (si le lecteur le propose, comme Spotify). Il faut accorder à l'app l'*accès aux notifications* une fois, depuis ses réglages.
 - **Jour ou nuit rouge** : en *Auto*, la nuit suit une plage horaire (22:00 → 07:00 par défaut) ; on peut aussi forcer *Jour* ou *Nuit*. Le mode nuit passe en rouge sombre à luminosité minimale pour préserver la vision nocturne.
 - **Gestes** :
@@ -35,10 +38,10 @@ Sur Android, l'écran toujours allumé (Always On Display) est réservé au syst
 - **Lancement pendant la charge** grâce à l'écran de veille Android.
 - **Paysage ou portrait** : en paysage, l'horloge et le calendrier sont côte à côte ; en portrait (téléphone debout sur son chargeur, par exemple), l'horloge passe en haut et le calendrier dessous. Le réglage *Orientation de l'écran de veille* permet aussi de rester toujours en paysage, l'horloge tournée d'un quart de tour, si la rotation automatique est coupée.
 - **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis vos routines ou outils d'automatisation (par exemple *Modes et routines* sur Samsung, ou Tasker), à heure fixe ou au début d'un mode.
-- **Réglages** : style, calendrier, musique en cours, jour/nuit et plage de nuit, orientation de l'écran de veille, délai d'extinction.
+- **Réglages** : style, calendrier, événements du jour et agendas affichés, musique en cours, jour/nuit et plage de nuit, orientation de l'écran de veille, délai d'extinction.
 - **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
-Pas de publicité, pas de réseau. Seul l'accès aux notifications est demandé, et uniquement pour la musique en cours (facultatif).
+Pas de publicité, pas de réseau. Deux autorisations facultatives : l'accès aux notifications pour la musique en cours, la lecture de l'agenda pour les événements du jour.
 
 <details>
 <summary>Plus de captures</summary>
@@ -46,6 +49,10 @@ Pas de publicité, pas de réseau. Seul l'accès aux notifications est demandé,
 | Minimal | Sans calendrier | Réglages |
 |---|---|---|
 | ![Minimal](screenshots/03-minimal.png) | ![Sans calendrier](screenshots/05-minimal-sans-calendrier.png) | ![Réglages](screenshots/08-reglages.png) |
+
+| Analogique et événements du jour |
+|---|
+| ![Cadran analogique à côté de la semaine et des événements du jour](screenshots/evenements-analog.png) |
 
 </details>
 
@@ -141,11 +148,11 @@ L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge
 
 ## Tests
 
-- **Tests unitaires** (JVM, rapides) : plage de nuit, raccourcis jour/nuit, grille du calendrier, côté de l'horloge, orbite anti-marquage, rythme de rafraîchissement, détection du « j'aime », affichage et place de la musique (sous l'heure, ou carte si le calendrier est masqué).
+- **Tests unitaires** (JVM, rapides) : plage de nuit, raccourcis jour/nuit, grille du calendrier, côté de l'horloge, orbite anti-marquage, rythme de rafraîchissement, détection du « j'aime », affichage et place de la musique (sous l'heure, ou carte si le calendrier est masqué), événements du jour (jours UTC des événements « toute la journée », minuit, tri, agendas cochés, semaine ISO).
   ```bash
   mise exec -- ./gradlew testDebugUnitTest
   ```
-- **Tests d'interface** (Compose, sur un émulateur ou un téléphone branché, à heure fixe) : calendrier affiché par défaut, calendrier et musique visibles ensemble, barre musique sous l'heure sans chevauchement en paysage et en portrait (3 styles), carte musique si le calendrier est masqué, cadran pas plus haut que le calendrier, toucher pour la nuit, appui long pour le calendrier, balayage entre les styles.
+- **Tests d'interface** (Compose, sur un émulateur ou un téléphone branché, à heure fixe) : calendrier affiché par défaut, calendrier et musique visibles ensemble, barre musique sous l'heure sans chevauchement en paysage et en portrait (3 styles), carte musique si le calendrier est masqué, cadran pas plus haut que le calendrier, toucher pour la nuit, appui long pour le calendrier, balayage entre les styles, semaine et événements du jour à la place du mois (et le mois la nuit ou quand tout est passé), choix des agendas dans les réglages.
   ```bash
   mise exec -- ./gradlew connectedDebugAndroidTest
   ```

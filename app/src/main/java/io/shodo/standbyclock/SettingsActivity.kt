@@ -1,12 +1,15 @@
 package io.shodo.standbyclock
 
+import android.Manifest
 import android.app.TimePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -36,16 +41,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.shodo.standbyclock.ui.DayColors
 import io.shodo.standbyclock.ui.TAG_CALENDAR_SWITCH
+import io.shodo.standbyclock.ui.TAG_EVENTS_SWITCH
+import io.shodo.standbyclock.ui.calendarChoiceTag
 
 /**
- * Réglages : style, calendrier, jour/nuit, plage horaire de nuit, orientation et extinction automatique.
+ * Réglages : style, calendrier, événements du jour, jour/nuit, plage horaire de nuit, orientation et extinction automatique.
  * Ouvert aussi par le ⚙ de l'écran de veille.
  */
 class SettingsActivity : ComponentActivity() {
+    // Au retour de la demande, l'écran revérifie l'accès (reprise de l'activité) : rien à faire ici.
+    private val calendarPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    /**
+     * Déjà demandé et Android ne propose plus d'explication : la demande a été refusée pour de bon et ne
+     * s'afficherait plus, on ouvre donc la fiche de l'app. On décide avant de demander : fermer la fenêtre
+     * sans répondre n'est pas un refus, et ne doit pas envoyer dans les réglages.
+     */
+    private fun requestCalendarAccess(prefs: ClockPrefs) {
+        if (prefs.calendarAccessAsked && !shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR)) {
+            try {
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+            } catch (_: ActivityNotFoundException) {
+                startActivity(Intent(Settings.ACTION_SETTINGS))
+            }
+            return
+        }
+        prefs.calendarAccessAsked = true
+        calendarPermission.launch(Manifest.permission.READ_CALENDAR)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = ClockPrefs(this)
@@ -58,7 +87,12 @@ class SettingsActivity : ComponentActivity() {
                         onLaunch = { startActivity(Intent(this, MainActivity::class.java)) },
                         onOpenScreenSaver = ::openScreenSaverSettings,
                         hasMediaAccess = { MediaListenerService.isGranted(this) },
-                        onOpenNotificationAccess = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+                        onOpenNotificationAccess = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
+                        calendarSource = CalendarSource(
+                            hasAccess = { DeviceCalendar.hasAccess(this) },
+                            requestAccess = { requestCalendarAccess(prefs) },
+                            calendars = { DeviceCalendar.calendars(this) }
+                        )
                     )
                 }
             }
@@ -87,7 +121,8 @@ internal fun SettingsScreen(
     onLaunch: () -> Unit,
     onOpenScreenSaver: () -> Unit,
     hasMediaAccess: () -> Boolean,
-    onOpenNotificationAccess: () -> Unit
+    onOpenNotificationAccess: () -> Unit,
+    calendarSource: CalendarSource
 ) {
     var style by remember { mutableStateOf(prefs.style) }
     var calendar by remember { mutableStateOf(prefs.showCalendar) }
@@ -154,6 +189,8 @@ internal fun SettingsScreen(
             OutlinedButton(onClick = onOpenNotificationAccess) { Text("Autoriser l'accès aux notifications") }
         }
 
+        EventsSettings(prefs, calendarSource)
+
         Section("Jour ou nuit") {
             Choices(
                 options = listOf(ThemeMode.AUTO to "Auto", ThemeMode.DAY to "Jour", ThemeMode.NIGHT to "Nuit"),
@@ -216,6 +253,74 @@ internal fun SettingsScreen(
             Text(stringResource(R.string.help_screen_saver), style = MaterialTheme.typography.bodyMedium)
             OutlinedButton(onClick = onOpenScreenSaver) { Text("Ouvrir les réglages d'écran de veille") }
             Text(stringResource(R.string.help_routines), style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+/** Accès à l'agenda de l'appareil, fourni par l'activité (remplacé dans les tests). */
+internal class CalendarSource(val hasAccess: () -> Boolean, val requestAccess: () -> Unit, val calendars: () -> List<CalendarInfo>)
+
+/** Événements du jour : interrupteur, autorisation de lire l'agenda, puis choix des agendas affichés. */
+@Composable
+private fun EventsSettings(prefs: ClockPrefs, source: CalendarSource) {
+    var show by remember { mutableStateOf(prefs.showEvents) }
+    var shown by remember { mutableStateOf(prefs.shownCalendars) }
+    var access by remember { mutableStateOf(false) }
+    var calendars by remember { mutableStateOf(emptyList<CalendarInfo>()) }
+    // Revérifié au retour de la demande d'autorisation ou des réglages Android.
+    val currentSource by rememberUpdatedState(source)
+    LifecycleResumeEffect(Unit) {
+        access = currentSource.hasAccess()
+        calendars = if (access) currentSource.calendars() else emptyList()
+        onPauseOrDispose { }
+    }
+
+    // Un seul bloc émis : interrupteur, puis autorisation ou choix des agendas.
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Afficher les événements du jour")
+                Text(
+                    "Le jour, ceux qui ne sont pas encore terminés, à côté de l'horloge. La nuit, le calendrier du mois seul.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Switch(checked = show, modifier = Modifier.testTag(TAG_EVENTS_SWITCH), onCheckedChange = {
+                show = it
+                prefs.showEvents = it
+            })
+        }
+        when {
+            !show -> Unit
+
+            !access -> {
+                Text("Pour afficher les événements, StandBy Clock doit pouvoir lire l'agenda.", style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(onClick = source.requestAccess) { Text("Autoriser l'accès à l'agenda") }
+            }
+
+            else -> Section("Agendas affichés") {
+                Text(
+                    "Cocher les agendas à afficher. Un agenda ajouté plus tard sur l'appareil reste masqué tant qu'il n'est pas coché.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                if (calendars.isEmpty()) Text("Aucun agenda sur cet appareil.", style = MaterialTheme.typography.bodyMedium)
+                for (calendar in calendars) {
+                    // Toute la ligne se coche, libellé compris : la case seule est une cible trop petite.
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .toggleable(value = calendar.id in shown, role = Role.Checkbox) { checked ->
+                                shown = if (checked) shown + calendar.id else shown - calendar.id
+                                prefs.shownCalendars = shown
+                            }
+                            .testTag(calendarChoiceTag(calendar.id)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(checked = calendar.id in shown, onCheckedChange = null)
+                        Text(calendar.label())
+                    }
+                }
+            }
         }
     }
 }

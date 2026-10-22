@@ -36,9 +36,9 @@ Sur Android, l'écran toujours allumé (Always On Display) est réservé au syst
   - appui long pour afficher ou masquer le calendrier ;
   - double toucher pour ouvrir les réglages.
 - **Lancement pendant la charge** grâce à l'écran de veille Android.
-- **Paysage ou portrait** : en paysage, l'horloge et le calendrier sont côte à côte ; en portrait (téléphone debout sur son chargeur, par exemple), l'horloge passe en haut et le calendrier dessous. Le réglage *Orientation de l'écran de veille* permet aussi de rester toujours en paysage, l'horloge tournée d'un quart de tour, si la rotation automatique est coupée.
+- **Paysage ou portrait** : en paysage, l'horloge et le calendrier sont côte à côte ; en portrait (téléphone debout sur son chargeur, par exemple), l'horloge passe en haut et le calendrier dessous. Le réglage *Orientation* s'applique à l'app comme à l'écran de veille : *Automatique* suit la rotation du téléphone, *Toujours paysage* garde l'app en paysage et, dans l'écran de veille, tourne l'horloge d'un quart de tour si la rotation automatique est coupée.
 - **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis vos routines ou outils d'automatisation (par exemple *Modes et routines* sur Samsung, ou Tasker), à heure fixe ou au début d'un mode.
-- **Réglages** : style, calendrier, événements du jour et agendas affichés, musique en cours, jour/nuit et plage de nuit, orientation de l'écran de veille, délai d'extinction.
+- **Réglages** : style, calendrier, événements du jour et agendas affichés, musique en cours, jour/nuit et plage de nuit, orientation, délai d'extinction.
 - **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
 Pas de publicité, pas de réseau. Deux autorisations facultatives : l'accès aux notifications pour la musique en cours, la lecture de l'agenda pour les événements du jour.
@@ -144,7 +144,7 @@ Paramètres > Affichage > **Écran de veille** (le chemin varie selon les fabric
 
 Astuce : le bouton ⚙ de l'écran de veille ouvre les réglages de l'app.
 
-L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge (filaire ou par induction) : poser le téléphone écran allumé. Réglage **Orientation de l'écran de veille** : *Automatique* suit l'écran (en portrait, horloge et calendrier l'un au-dessus de l'autre, qui échangent leur place chaque heure) ; *Toujours paysage* tourne l'horloge d'un quart de tour quand l'écran est en portrait (rotation automatique coupée), pour la lire téléphone couché, haut de l'écran vers la gauche.
+L'écran de veille démarre quand l'écran s'éteint tout seul pendant la charge (filaire ou par induction) : poser le téléphone écran allumé. Réglage **Orientation** (app et écran de veille) : *Automatique* suit l'écran (en portrait, horloge et calendrier l'un au-dessus de l'autre, qui échangent leur place chaque heure) ; *Toujours paysage* tourne l'horloge d'un quart de tour quand l'écran est en portrait (rotation automatique coupée), pour la lire téléphone couché, haut de l'écran vers la gauche.
 
 ## Tests
 

@@ -10,7 +10,10 @@ enum class ClockStyle { DIGITAL, ANALOG, MINIMAL }
 /** Jour ou nuit : AUTO suit la plage horaire de nuit réglée dans l'app. */
 enum class ThemeMode { AUTO, DAY, NIGHT }
 
-/** Orientation de l'écran de veille : AUTO suit l'écran, LANDSCAPE tourne l'horloge si l'écran est en portrait. */
+/**
+ * Orientation de l'app et de l'écran de veille : AUTO suit l'écran ; LANDSCAPE garde l'app en paysage et,
+ * dans l'écran de veille (qui ne peut pas imposer le paysage), tourne l'horloge si l'écran est en portrait.
+ */
 enum class OrientationMode { AUTO, LANDSCAPE }
 
 /** Préférences partagées entre l'activité, l'écran de veille et les réglages. */

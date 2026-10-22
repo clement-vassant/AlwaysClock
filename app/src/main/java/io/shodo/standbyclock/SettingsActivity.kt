@@ -219,7 +219,7 @@ internal fun SettingsScreen(
             }
         }
 
-        Section("Orientation de l'écran de veille") {
+        Section("Orientation") {
             Choices(
                 options = listOf(OrientationMode.AUTO to "Automatique", OrientationMode.LANDSCAPE to "Toujours paysage"),
                 selected = orientation
@@ -229,9 +229,10 @@ internal fun SettingsScreen(
             }
             Text(
                 if (orientation == OrientationMode.AUTO) {
-                    "Suit l'écran : côte à côte en paysage, horloge et calendrier l'un au-dessus de l'autre en portrait."
+                    "Suit la rotation du téléphone : côte à côte en paysage, horloge et calendrier l'un au-dessus de l'autre en portrait."
                 } else {
-                    "Écran en portrait : l'horloge est tournée pour se lire téléphone couché, haut de l'écran vers la gauche."
+                    "L'app reste en paysage. Si l'écran de veille s'affiche en portrait, l'horloge y est tournée " +
+                        "pour se lire téléphone couché, haut de l'écran vers la gauche."
                 },
                 style = MaterialTheme.typography.bodySmall
             )

@@ -28,30 +28,6 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
-        <!-- Entrées « Horloge jour » / « Horloge nuit » : proposées par les routines et outils d'automatisation qui savent ouvrir une app. -->
-        <activity-alias
-            android:name=".DayClock"
-            android:exported="true"
-            android:icon="@drawable/ic_clock"
-            android:label="@string/day_clock"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".NightClock"
-            android:exported="true"
-            android:icon="@drawable/ic_clock_night"
-            android:label="@string/night_clock"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
         <activity
             android:name=".SettingsActivity"
             android:exported="true"

@@ -89,13 +89,6 @@ fun isNightAt(mode: ThemeMode, time: LocalTime, start: Int, end: Int): Boolean =
     }
 }
 
-/** Les entrées « Horloge jour » et « Horloge nuit » sont des alias de l'activité principale. */
-fun themeFromAlias(className: String?, packageName: String): ThemeMode? = when (className) {
-    "$packageName.DayClock" -> ThemeMode.DAY
-    "$packageName.NightClock" -> ThemeMode.NIGHT
-    else -> null
-}
-
 /** Nom d'extra des raccourcis : "day" ou "night" force le mode pour ce lancement. */
 const val EXTRA_THEME = "theme"
 

@@ -42,11 +42,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import fr.clementvassant.standbyclock.ui.DayColors
 import fr.clementvassant.standbyclock.ui.TAG_CALENDAR_SWITCH
 import fr.clementvassant.standbyclock.ui.TAG_EVENTS_SWITCH
+import fr.clementvassant.standbyclock.ui.TAG_SETTINGS
 import fr.clementvassant.standbyclock.ui.calendarChoiceTag
 
 /**
@@ -142,6 +145,9 @@ internal fun SettingsScreen(
 
     Column(
         Modifier
+            // Identifiants visibles des parcours e2e (UI Automator), comme sur l'écran de l'horloge.
+            .semantics { testTagsAsResourceId = true }
+            .testTag(TAG_SETTINGS)
             .safeDrawingPadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),

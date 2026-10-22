@@ -51,8 +51,26 @@ jobs:
           name: unit-test-reports
           path: app/build/reports/tests/
 
+  # Captures de référence (Roborazzi, sur la JVM) : une différence de plus de 1 % avec les images du dépôt
+  # fait échouer le job ; l'artefact montre la référence, le rendu de la PR et leur différence.
+  screenshots:
+    name: Captures de référence
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew verifyRoborazziDebug
+      - name: Différences en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-diffs
+          path: app/build/outputs/roborazzi/
+
   instrumented-tests:
-    name: Tests d'interface (émulateur)
+    name: Tests d'interface et parcours e2e (émulateur)
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -92,7 +110,9 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Émulateur créé et mis en cache."
-      - name: Tests Compose sur l'émulateur
+      # Tests Compose et parcours e2e UI Automator (androidTest/.../e2e). Le script tient sur une ligne : l'action
+      # lance chaque ligne à part, et les captures des parcours doivent être récupérées même si un test échoue.
+      - name: Tests Compose et parcours e2e sur l'émulateur
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.API_LEVEL }}
@@ -101,12 +121,19 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest
+          script: ./gradlew connectedDebugAndroidTest; status=$?; adb pull /sdcard/Download/standbyclock-e2e app/build/e2e-captures || true; exit $status
       # Le rapport HTML n'est lisible qu'en téléchargeant l'artefact : on écrit aussi les tests en échec
       # et leur message dans le journal du job.
       - name: Tests en échec
         if: failure()
-        run: find app/build/outputs/androidTest-results -name '*.xml' -exec grep -h -A6 '<failure' {} + || true
+        run: find app/build/outputs/androidTest-results -name '*.xml' -exec grep -h -A40 '<failure' {} + || true
+      - name: Captures des parcours e2e
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-captures
+          path: app/build/e2e-captures/
+          if-no-files-found: ignore
       - name: Rapports en cas d'échec
         if: failure()
         uses: actions/upload-artifact@v7
@@ -133,7 +160,7 @@ jobs:
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [lint, unit-tests, instrumented-tests, build]
+    needs: [lint, unit-tests, screenshots, instrumented-tests, build]
     runs-on: ubuntu-latest
     steps:
       - name: Tous les jobs sont verts

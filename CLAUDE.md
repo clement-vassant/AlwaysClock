@@ -6,8 +6,8 @@ Package `fr.clementvassant.standbyclock`, minSdk 29, Java 17 via `mise.toml`. R�
 ## Règles de travail
 
 - **Jamais de push sur `main`.** Une branche et une pull request par sujet ; la PR n'est mergeable que si le job `ci-ok` est vert.
-- **Pas de changement sans test.** Logique : test unitaire JVM dans `app/src/test`. Ce qui se voit : test Compose dans `app/src/androidTest`.
-- **Avant de pousser :** `scripts/check.sh` (ktlint, detekt, Android Lint, tests unitaires, APK). `mise exec -- ./gradlew ktlintFormat` corrige la mise en forme.
+- **Pas de changement sans test.** Logique : test unitaire JVM dans `app/src/test`. Ce qui se voit : test Compose dans `app/src/androidTest` et capture de référence Roborazzi (`StandByScreenshotTest`). Ce qui traverse le système (permission, écran de veille, rotation) : parcours e2e UI Automator dans `app/src/androidTest/.../e2e`.
+- **Avant de pousser :** `scripts/check.sh` (ktlint, detekt, Android Lint, tests unitaires, captures de référence, APK). `mise exec -- ./gradlew ktlintFormat` corrige la mise en forme.
 - **Ne jamais affaiblir un garde-fou pour passer la CI** : pas de test désactivé, pas de `@Suppress`, `tools:ignore` ni règle désactivée sans commentaire qui explique pourquoi c'est voulu.
 - Messages de commit et titres de PR en anglais, au format [Conventional Commits](https://www.conventionalcommits.org/fr/) (`feat:`, `fix:`, `docs:`, `ci:`…) : le bouton de release en déduit la prochaine version. Description de PR au format « Avant / Après / Comment » du modèle `.github/pull_request_template.md`.
 - La version n'est écrite nulle part dans le dépôt : elle vient du dernier tag `vX.Y.Z` (voir CONTRIBUTING.md).
@@ -36,5 +36,5 @@ Les utiliser plutôt que tout faire dans la conversation principale :
 | `ci-doctor` | quand un job de la CI échoue : trouve la cause et propose le correctif minimal |
 | `designer` | dès qu'un changement touche l'interface, avant tout code : questions UI et UX une à la fois, 3 ou 4 maquettes dans un canevas Design, puis le plan |
 | `compose-ui` | pour une nouvelle vue ou un nouveau style d'horloge : Compose, anti-marquage, nuit |
-| `qa` | quand une PR change ce qui se voit ou le comportement, CI verte, avant le feu vert : scénarios sur l'émulateur du Mac (Remote Control), captures, rapport OK / KO sans corriger |
+| `qa` | quand une PR change ce qui se voit ou le comportement, CI verte, avant le feu vert : suite e2e puis scénarios restants sur l'émulateur pliable du Mac (Remote Control), captures, rapport OK / KO sans corriger |
 | `releaser` | quand une release est demandée : lance le workflow Release sur `main`, suit l'exécution, rend la version et l'APK |

@@ -23,7 +23,7 @@ private const val NIGHT_BRIGHTNESS = 0.01f
 /** Plafond de luminosité le jour : un écran OLED s'use moins vite à faible luminosité. */
 private const val DAY_MAX_BRIGHTNESS = 0.35f
 
-/** Horloge plein écran en paysage, écran maintenu allumé ; s'éteint seule après le délai réglé. */
+/** Horloge plein écran, écran maintenu allumé ; s'éteint seule après le délai réglé. */
 class MainActivity : ComponentActivity() {
 
     /** Mode imposé par le lancement (raccourci ou entrée « Horloge jour/nuit »), sinon les réglages. */
@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
         launchedAt = SystemClock.elapsedRealtime()
         forcedTheme.value = themeFromLaunch(intent)
         prefs = ClockPrefs(this)
+        requestedOrientation = activityOrientation(prefs.orientation)
         setContent {
             StandByScreen(
                 prefs = prefs,
@@ -78,6 +79,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Le réglage a pu changer pendant un passage par les réglages : on le relit à chaque reprise.
+        requestedOrientation = activityOrientation(prefs.orientation)
         val minutes = prefs.autoOffMinutes
         if (minutes <= 0) return
         autoOff = lifecycleScope.launch {

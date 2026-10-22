@@ -108,6 +108,14 @@ class SettingsScreenTest {
         assertEquals(OrientationMode.AUTO, prefs.orientation)
         rule.onNodeWithText("Toujours paysage").performScrollTo().performClick()
         assertEquals(OrientationMode.LANDSCAPE, prefs.orientation)
+        rule.onNodeWithText("L'app reste en paysage", substring = true).assertExists()
+    }
+
+    @Test
+    fun orientationSettingCoversTheAppToo() {
+        showSettings()
+        rule.onNodeWithText("Orientation").performScrollTo().assertIsDisplayed()
+        rule.onNodeWithText("Suit la rotation du téléphone", substring = true).assertExists()
     }
 
     @Test

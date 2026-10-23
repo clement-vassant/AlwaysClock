@@ -37,7 +37,7 @@ Sur Android, l'écran toujours allumé (Always On Display) est réservé au syst
   - double toucher pour ouvrir les réglages.
 - **Lancement pendant la charge** grâce à l'écran de veille Android.
 - **Paysage ou portrait** : en paysage, l'horloge et le calendrier sont côte à côte ; en portrait (téléphone debout sur son chargeur, par exemple), l'horloge passe en haut et le calendrier dessous. Le réglage *Orientation* s'applique à l'app comme à l'écran de veille : *Automatique* suit la rotation du téléphone, *Toujours paysage* garde l'app en paysage et, dans l'écran de veille, tourne l'horloge d'un quart de tour si la rotation automatique est coupée.
-- **Entrées « Horloge jour » et « Horloge nuit »** pour lancer l'horloge dans un mode donné depuis vos routines ou outils d'automatisation (par exemple *Modes et routines* sur Samsung, ou Tasker), à heure fixe ou au début d'un mode.
+- **Une seule icône** : *StandBy Clock* se lance depuis vos routines ou outils d'automatisation (par exemple *Modes et routines* sur Samsung, ou Tasker), à heure fixe ou au début d'un mode. Un appui long sur l'icône propose *Horloge jour* et *Horloge nuit* pour forcer le mode une fois.
 - **Réglages** : style, calendrier, événements du jour et agendas affichés, musique en cours, jour/nuit et plage de nuit, orientation, délai d'extinction.
 - **Protection de l'écran OLED** : le contenu suit une orbite lente, l'horloge et le calendrier échangent leur place chaque heure, la luminosité est limitée et l'horloge s'arrête toute seule après 2 h par défaut. Détails dans [Protection de l'écran](#protection-de-lécran).
 
@@ -87,14 +87,14 @@ Le plus simple : télécharger l'APK `standbyclock-vX.Y.Z.apk` de la [dernière 
 
 ## Programmer avec vos routines
 
-Les entrées **Horloge jour** et **Horloge nuit** forcent le mode pour ce lancement (*StandBy Clock* suit le mode Auto). Elles se lancent depuis n'importe quel outil d'automatisation capable d'ouvrir une app : Tasker, Automate, ou les routines intégrées de certains fabricants. Le principe :
+*StandBy Clock* suit le mode Auto : le jour et la nuit dépendent de la plage horaire réglée. L'app se lance depuis n'importe quel outil d'automatisation capable d'ouvrir une app : Tasker, Automate, ou les routines intégrées de certains fabricants. Le principe :
 1. créer une routine ;
 2. *Si* : par exemple une **heure** (22:30, tous les jours), **en charge**, ou le début d'un mode (Sommeil...) ;
-3. *Alors* : **ouvrir une app** > *Horloge nuit* (ou *Horloge jour*, ou *StandBy Clock*).
+3. *Alors* : **ouvrir une app** > *StandBy Clock*.
 
 Exemple sur Samsung : Paramètres > Modes et routines > Routines > **+**, puis *Applications > Ouvrir une app*.
 
-Les deux entrées supplémentaires peuvent être masquées de l'écran d'accueil selon le lanceur ; elles devraient rester proposées dans les routines (non vérifié).
+Pour forcer le jour ou la nuit le temps d'une séance, faites un appui long sur l'icône : *Horloge jour* ou *Horloge nuit*. Les outils qui acceptent les raccourcis d'app (Tasker, par exemple) peuvent aussi les lancer.
 
 ## Écrans pliables
 

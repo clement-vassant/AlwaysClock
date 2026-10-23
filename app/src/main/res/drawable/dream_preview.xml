@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vignette de l'écran de veille dans les réglages Android : l'écran réel en miniature (heure Digital et calendrier du mois).
+     Presque carrée : les réglages la posent dans une case carrée. Le centre reste vide, car le bouton de personnalisation
+     d'Android s'y affiche quand l'écran de veille est choisi.
+     Les chiffres sont tracés : un vector drawable ne sait pas afficher de texte.
+     Taille intrinsèque sous 200 dp (règle Lint VectorRaster) : les réglages la mettent de toute façon à l'échelle. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp" android:height="160dp"
+    android:viewportWidth="200" android:viewportHeight="200">
+    <path android:fillColor="#000000" android:pathData="M0,0h200v200h-200z" />
+    <!-- 07:42 en haut : heures en gris clair, minutes en orange, comme le style Digital. -->
+    <group android:scaleX="0.8" android:scaleY="0.8" android:translateX="12" android:translateY="-15">
+        <path android:strokeColor="#BDBDBD" android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round"
+            android:pathData="M30,66a15,14 0,0 1,30 0v28a15,14 0,0 1,-30 0zM68,52h30L78,108" />
+        <path android:fillColor="#8E8E93"
+            android:pathData="M105,70a5,5 0,1 0,10 0a5,5 0,1 0,-10 0zM105,92a5,5 0,1 0,10 0a5,5 0,1 0,-10 0z" />
+        <path android:strokeColor="#FF9F0A" android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round"
+            android:pathData="M144,108V52L122,90H152M160,64a15,13 0,0 1,30 2c0,10 -8,16 -30,42h30" />
+    </group>
+    <!-- Calendrier du mois en bas : titre en orange, jours en trame, aujourd'hui en orange. -->
+    <path android:strokeColor="#FF9F0A" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M56,112H92" />
+    <path android:fillColor="#48484A" android:pathData="M95,124h10v10h-10zM109,124h10v10h-10zM123,124h10v10h-10zM137,124h10v10h-10zM53,138h10v10h-10zM67,138h10v10h-10zM81,138h10v10h-10zM95,138h10v10h-10zM109,138h10v10h-10zM123,138h10v10h-10zM137,138h10v10h-10zM53,152h10v10h-10zM67,152h10v10h-10zM81,152h10v10h-10zM95,152h10v10h-10zM109,152h10v10h-10zM123,152h10v10h-10zM137,152h10v10h-10zM53,166h10v10h-10zM67,166h10v10h-10zM81,166h10v10h-10zM109,166h10v10h-10zM123,166h10v10h-10zM137,166h10v10h-10zM53,180h10v10h-10zM67,180h10v10h-10zM81,180h10v10h-10zM95,180h10v10h-10zM109,180h10v10h-10zM123,180h10v10h-10z" />
+    <path android:fillColor="#FF9F0A" android:pathData="M95,166h10v10h-10z" />
+</vector>

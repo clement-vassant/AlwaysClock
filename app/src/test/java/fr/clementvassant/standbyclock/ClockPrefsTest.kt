@@ -8,7 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ClockPrefsTest {
-    private val pkg = "fr.clementvassant.standbyclock"
 
     private fun autoNight(time: String, start: String, end: String) =
         isNightAt(ThemeMode.AUTO, LocalTime.parse(time), minutes(start), minutes(end))
@@ -47,13 +46,5 @@ class ClockPrefsTest {
         assertEquals(ThemeMode.NIGHT, themeFromExtra("night"))
         assertNull(themeFromExtra(null))
         assertNull(themeFromExtra("auto"))
-    }
-
-    @Test
-    fun `theme from launcher alias`() {
-        assertEquals(ThemeMode.DAY, themeFromAlias("$pkg.DayClock", pkg))
-        assertEquals(ThemeMode.NIGHT, themeFromAlias("$pkg.NightClock", pkg))
-        assertNull(themeFromAlias("$pkg.MainActivity", pkg))
-        assertNull(themeFromAlias(null, pkg))
     }
 }

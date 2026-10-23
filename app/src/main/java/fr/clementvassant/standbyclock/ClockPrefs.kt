@@ -16,9 +16,12 @@ enum class ThemeMode { AUTO, DAY, NIGHT }
  */
 enum class OrientationMode { AUTO, LANDSCAPE }
 
+/** Fichier des préférences de l'app. */
+const val PREFS_FILE = "standby_clock"
+
 /** Préférences partagées entre l'activité, l'écran de veille et les réglages. */
 class ClockPrefs(context: Context) {
-    private val prefs = context.getSharedPreferences("standby_clock", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
 
     var style: ClockStyle
         get() = ClockStyle.entries.getOrElse(prefs.getInt("style", 0)) { ClockStyle.DIGITAL }

@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
+    id("io.github.takahirom.roborazzi")
 }
 
 // Version SemVer de l'app : la release la passe en -PappVersion=X.Y.Z (voir release.yml) ;
@@ -61,6 +62,10 @@ android {
         // Expose la version à l'app et aux tests (AppVersionTest).
         buildConfig = true
     }
+    testOptions {
+        // Robolectric (captures Roborazzi) a besoin des ressources de l'app dans les tests JVM.
+        unitTests.isIncludeAndroidResources = true
+    }
     lint {
         // Les avertissements importants font échouer la CI ; les avertissements de mise à jour de dépendances
         // sont suivis par Dependabot et ne bloquent pas.
@@ -69,6 +74,11 @@ android {
         checkDependencies = true
         disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion", "OldTargetApi")
     }
+}
+
+roborazzi {
+    // Images de référence versionnées à côté des tests : une PR qui change l'affichage montre les images changées.
+    outputDir.set(file("src/test/screenshots"))
 }
 
 ktlint {
@@ -108,11 +118,21 @@ dependencies {
     implementation("androidx.savedstate:savedstate-ktx:1.3.0")
 
     testImplementation("junit:junit:4.13.2")
+    // Captures de référence sur la JVM (Robolectric) : StandByScreenshotTest.
+    testImplementation(composeBom)
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.75.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.75.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.75.0")
 
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
+    // Parcours de bout en bout : lanceur, boîte de permission, écran de veille, rotation (dossier androidTest/.../e2e).
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     ktlintRuleset("io.nlopez.compose.rules:ktlint:0.6.8")

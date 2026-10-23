@@ -4,14 +4,14 @@
 
 - **Jamais de push direct sur `main`.** Chaque changement passe par une branche et une pull request dédiée, un sujet par PR.
 - **Une PR n'est mergeable que si la CI est verte** (job `ci-ok`) et que la branche est à jour avec `main`.
-- **Chaque changement arrive avec ses tests** : test unitaire JVM pour la logique, test Compose pour ce qui se voit à l'écran.
+- **Chaque changement arrive avec ses tests** : test unitaire JVM pour la logique, test Compose et capture de référence pour ce qui se voit à l'écran, parcours e2e pour ce qui passe par le système.
 
 ## Avant de pousser
 
 ```bash
 mise install           # Java 17, une seule fois
-scripts/check.sh       # ktlint, detekt, Android Lint, tests unitaires, APK
-scripts/check.sh --all # idem + tests d'interface (émulateur ou téléphone branché)
+scripts/check.sh       # ktlint, detekt, Android Lint, tests unitaires, captures de référence, APK
+scripts/check.sh --all # idem + tests d'interface et parcours e2e (émulateur ou téléphone branché)
 ```
 
 `mise exec -- ./gradlew ktlintFormat` corrige automatiquement la mise en forme.
@@ -22,9 +22,18 @@ scripts/check.sh --all # idem + tests d'interface (émulateur ou téléphone bra
 |---|---|---|
 | Lint | `ktlintCheck detekt lintDebug` | style Kotlin (ktlint + règles Compose), code smells (detekt + règles Compose), erreurs Android (Lint, avertissements bloquants) |
 | Tests unitaires | `testDebugUnitTest` | logique pure : plage de nuit, calendrier, anti-marquage, musique… |
-| Tests d'interface | `connectedDebugAndroidTest` | écran réel sur un émulateur API 34, à heure fixe |
+| Captures de référence | `verifyRoborazziDebug` | l'écran de l'horloge (3 styles, jour/nuit, paysage/portrait) rendu sur la JVM et comparé aux images de `app/src/test/screenshots/` ; en cas d'écart, l'artefact `screenshot-diffs` montre la différence |
+| Tests d'interface et parcours e2e | `connectedDebugAndroidTest` | tests Compose à heure fixe, puis parcours de bout en bout UI Automator (lanceur, réglages, autorisation de l'agenda, orientation Automatique et Toujours paysage, écran de veille) sur un émulateur API 34 ; captures dans l'artefact `e2e-captures` |
 | APK debug et release | `assembleDebug assembleRelease` | l'app compile dans les deux variantes ; l'APK debug est téléchargeable dans les artefacts du run |
 | `ci-ok` | | vert seulement si tous les autres le sont ; c'est lui que la protection de `main` exige |
+
+### Captures de référence
+
+Un changement visible modifie les images de `app/src/test/screenshots/` : on les régénère avec `./gradlew recordRoborazziDebug` et elles apparaissent dans le diff de la PR, à relire comme le code. Elles sont rendues sous Linux comme sur la CI ; sur macOS, `scripts/check.sh` produit le rapport de comparaison sans échouer, car le rendu des polices diffère un peu. Pour régénérer sans Linux, prendre les images `*_actual.png` de l'artefact `screenshot-diffs` de la CI.
+
+### Parcours e2e
+
+Les parcours de `app/src/androidTest/java/fr/clementvassant/standbyclock/e2e/` pilotent l'app comme un utilisateur, en [UI Automator](https://developer.android.com/training/testing/ui-automator) : ils voient le lanceur, la vraie boîte de permission et l'écran de veille système. Ils créent leurs propres données (agenda local supprimé à la fin), forcent le mode Jour et enregistrent une capture par étape dans `/sdcard/Download/standbyclock-e2e/`. L'agent `qa` les rejoue sur l'émulateur pliable, plié et déplié, avant tout scénario manuel.
 
 Dependabot propose chaque semaine les mises à jour Gradle et chaque mois celles des actions GitHub ; elles passent par la même CI.
 
@@ -71,4 +80,4 @@ Puis dans **Settings > Secrets and variables > Actions** du dépôt, créer `REL
 
 ## Avec Claude Code
 
-`CLAUDE.md` reprend ces règles pour Claude, et `.claude/agents/` définit des agents spécialisés : `code-reviewer` (relecture du diff), `test-writer` (tests), `ci-doctor` (CI rouge) et `compose-ui` (vues Compose).
+`CLAUDE.md` reprend ces règles pour Claude, et `.claude/agents/` définit des agents spécialisés : `code-reviewer` (relecture du diff), `test-writer` (tests), `ci-doctor` (CI rouge), `compose-ui` (vues Compose) et `qa` (suite e2e et scénarios sur l'émulateur du Mac).

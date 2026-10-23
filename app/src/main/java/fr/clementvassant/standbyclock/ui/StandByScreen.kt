@@ -25,6 +25,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import fr.clementvassant.standbyclock.AgendaLines
@@ -128,7 +129,12 @@ fun StandByScreen(
             .fillMaxSize()
             .background(Color.Black)
             .testTag(TAG_SCREEN)
-            .semantics { stateDescription = if (night) "nuit" else "jour" }
+            // Les testTag deviennent des identifiants visibles d'UI Automator : les parcours e2e retrouvent l'écran
+            // dans l'écran de veille, hors de l'app.
+            .semantics {
+                testTagsAsResourceId = true
+                stateDescription = if (night) STATE_NIGHT else STATE_DAY
+            }
             // Toucher : jour/nuit. Appui long : calendrier. Double toucher : réglages (dans l'app seulement).
             .pointerInput(onOpenSettings) {
                 detectTapGestures(

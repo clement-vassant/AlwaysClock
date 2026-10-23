@@ -9,7 +9,7 @@
     android:viewportWidth="200" android:viewportHeight="200">
     <path android:fillColor="#000000" android:pathData="M0,0h200v200h-200z" />
     <!-- 07:42 en haut : heures en gris clair, minutes en orange, comme le style Digital. -->
-    <group android:scaleX="0.8" android:scaleY="0.8" android:translateX="12" android:translateY="-9">
+    <group android:scaleX="0.8" android:scaleY="0.8" android:translateX="12" android:translateY="-15">
         <path android:strokeColor="#BDBDBD" android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round"
             android:pathData="M30,66a15,14 0,0 1,30 0v28a15,14 0,0 1,-30 0zM68,52h30L78,108" />
         <path android:fillColor="#8E8E93"

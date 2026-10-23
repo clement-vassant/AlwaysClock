@@ -26,7 +26,7 @@ private const val DAY_MAX_BRIGHTNESS = 0.35f
 /** Horloge plein écran, écran maintenu allumé ; s'éteint seule après le délai réglé. */
 class MainActivity : ComponentActivity() {
 
-    /** Mode imposé par le lancement (raccourci ou entrée « Horloge jour/nuit »), sinon les réglages. */
+    /** Mode imposé par le lancement (raccourci « Horloge jour/nuit » de l'appui long), sinon les réglages. */
     private val forcedTheme = mutableStateOf<ThemeMode?>(null)
 
     private lateinit var prefs: ClockPrefs
@@ -96,9 +96,7 @@ class MainActivity : ComponentActivity() {
         super.onPause()
     }
 
-    /** Les entrées « Horloge jour » et « Horloge nuit » sont des alias de cette activité. */
-    private fun themeFromLaunch(intent: Intent): ThemeMode? =
-        themeFromExtra(intent.getStringExtra(EXTRA_THEME)) ?: themeFromAlias(intent.component?.className, packageName)
+    private fun themeFromLaunch(intent: Intent): ThemeMode? = themeFromExtra(intent.getStringExtra(EXTRA_THEME))
 
     /** Luminosité de la fenêtre : minimale la nuit, plafonnée à 35 % le jour (usure OLED). */
     private fun applyBrightness(night: Boolean) {
